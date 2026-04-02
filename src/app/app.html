@@ -1,0 +1,145 @@
+<main class="app-shell">
+  <header class="menu-bar">
+    <span class="menu-title">{{ title }}</span>
+
+    <div class="menu-divider"></div>
+
+    <button type="button" class="menu-btn" (click)="newFile()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      New
+    </button>
+
+    <button type="button" class="menu-btn" (click)="saveFile()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+      Save
+    </button>
+
+    <button type="button" class="menu-btn" (click)="exportXml()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Export XML
+    </button>
+
+    <div class="load-menu">
+      <button type="button" class="menu-btn" (click)="toggleLoadMenu()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+        Load
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+
+      @if (loadMenuOpen) {
+        <div class="load-menu-backdrop" (click)="loadMenuOpen = false"></div>
+        <div class="load-menu-dropdown">
+          @if (!savedFiles.length) {
+            <p class="load-menu-empty">No saved files</p>
+          }
+          @for (file of savedFiles; track trackFile($index, file)) {
+            <button type="button" class="load-menu-item" (click)="loadFileFromMenu(file.id)">
+              <div class="load-menu-item-info">
+                <div class="load-menu-item-name" [class.is-current]="file.id === currentFileId">{{ file.name }}</div>
+                <div class="load-menu-item-date">{{ formatDate(file.updatedAt) }}</div>
+              </div>
+              <span class="load-menu-item-delete" (click)="deleteFileFromMenu($event, file.id)" title="Delete">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="menu-divider"></div>
+
+    <div class="menu-filename">
+      <input
+        #fileNameInput
+        class="menu-filename-input"
+        type="text"
+        [(ngModel)]="fileName"
+        placeholder="Untitled"
+        [style.width.px]="fileNameInputWidth"
+      />
+      <button type="button" class="menu-filename-edit" title="Rename" (click)="fileNameInput.focus(); fileNameInput.select()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="workspace">
+    <section class="editor-shell">
+      <div class="editor-toolbar">
+        <lit-editor-toolbar #toolbar class="editor-toolbar-host"></lit-editor-toolbar>
+      </div>
+
+      <div class="editor-viewport">
+        <div #mount class="editor-mount"></div>
+      </div>
+
+      <section class="composer-panel">
+        <div class="composer-header">
+          <h2>XML composer</h2>
+          <span>{{ selectionLabel() ?? 'Cursor only' }}</span>
+        </div>
+        <pre>{{ xmlPreview }}</pre>
+      </section>
+    </section>
+
+    <aside class="inspector-shell">
+      <qti-composer-metadata-form
+        class="block inspector-block"
+        [title]="itemTitle"
+        [identifier]="identifier"
+        (metadata-change)="onMetadataChange($event)"
+      ></qti-composer-metadata-form>
+
+      <qti-attributes-panel
+        #attributesPanel
+        class="block inspector-block"
+      ></qti-attributes-panel>
+
+      <section class="panel-card">
+        <h2>HTML</h2>
+        <pre>{{ content?.html || '&lt;qti-item-body /&gt;' }}</pre>
+      </section>
+
+      @if (savedFiles.length) {
+        <section class="panel-card">
+          <h2>Saved files</h2>
+          <div class="saved-files">
+            @for (file of savedFiles; track trackFile($index, file)) {
+              <div class="saved-file-row">
+                <button type="button" class="saved-file-link" (click)="loadFile(file.id)">
+                  {{ file.name }}
+                </button>
+                <button type="button" class="saved-file-delete" (click)="deleteFile(file.id)">
+                  Delete
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </aside>
+  </section>
+</main>
