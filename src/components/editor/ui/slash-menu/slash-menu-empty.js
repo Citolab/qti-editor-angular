@@ -16,4 +16,6 @@ class SlashMenuEmptyElement extends LitElement {
   }
 }
 
-customElements.define('lit-editor-slash-menu-empty', SlashMenuEmptyElement)
+if (!customElements.get('lit-editor-slash-menu-empty')) {
+  customElements.define('lit-editor-slash-menu-empty', SlashMenuEmptyElement)
+}

@@ -64,8 +64,14 @@ qti-extended-text-interaction {
 }
 
 qti-simple-choice {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.65rem;
   background: #fff;
+}
+
+qti-simple-choice > p {
+  margin: 0;
 }

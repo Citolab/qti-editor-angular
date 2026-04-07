@@ -1,10 +1,12 @@
 import {
   CUSTOM_ELEMENTS_SCHEMA,
-  AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
+  NgZone,
   OnDestroy,
   ViewChild,
+  inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { createEditor, union, type Editor } from 'prosekit/core';
@@ -19,9 +21,13 @@ import {
 
 import '../components/editor/ui/button/index.js';
 import '../components/editor/ui/image-upload-popover/index.js';
+import '../components/editor/ui/slash-menu/index.js';
 import '../components/editor/ui/toolbar/index.js';
+import '../components/blocks/composer/index';
 import '../components/blocks/composer-metadata-form/index';
 import '../components/blocks/attributes-panel/index';
+import '../components/blocks/interaction-insert-menu/index';
+import '../components/blocks/convert-menu/index';
 import {
   onQtiContentChange,
   onQtiSelectionChange,
@@ -65,12 +71,27 @@ interface SavedFileRecord {
   styleUrl: './app.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class App implements AfterViewInit, OnDestroy {
-  @ViewChild('mount', { static: true })
-  private readonly mountRef?: ElementRef<HTMLDivElement>;
+export class App implements OnDestroy {
+  private _mountEl: HTMLElement | null = null;
+
+  @ViewChild('mount')
+  set mountRef(ref: ElementRef<HTMLDivElement> | undefined) {
+    const el = ref?.nativeElement ?? null;
+    if (el === this._mountEl) return;
+    this._mountEl = el;
+    if (el) {
+      queueMicrotask(() => {
+        if (this._mountEl !== el) return;
+        this.ngZone.runOutsideAngular(() => this.mountCurrentEditor(el));
+      });
+    }
+  }
 
   @ViewChild('toolbar', { static: true })
   private readonly toolbarRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
+
+  @ViewChild('slashMenu', { static: true })
+  private readonly slashMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
 
   @ViewChild('insertMenu', { static: true })
   private readonly insertMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
@@ -80,6 +101,9 @@ export class App implements AfterViewInit, OnDestroy {
 
   @ViewChild('attributesPanel', { static: true })
   private readonly attributesPanelRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
+
+  @ViewChild('composer', { static: true })
+  private readonly composerRef?: ElementRef<HTMLElement & { editor: Editor | null; identifier: string; title: string; lang: string }>;
 
   protected readonly title = 'QTI Editor';
   protected fileName = 'angular-qti-item';
@@ -92,6 +116,8 @@ export class App implements AfterViewInit, OnDestroy {
   protected currentFileId: string | null = null;
   protected loadMenuOpen = false;
 
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   private readonly eventTarget = new EventTarget();
   private editor!: Editor;
   private readonly unsubscribeContent: () => void;
@@ -99,22 +125,20 @@ export class App implements AfterViewInit, OnDestroy {
 
   constructor() {
     this.savedFiles = this.readSavedFiles();
-    this.createEditorInstance();
+    this.ngZone.runOutsideAngular(() => this.createEditorInstance());
 
     this.unsubscribeContent = onQtiContentChange((event) => {
       this.content = event.detail;
       this.updateXmlPreview();
+      this.cdr.detectChanges();
     }, this.eventTarget);
 
     this.unsubscribeSelection = onQtiSelectionChange((event) => {
       this.selection = event.detail;
+      this.cdr.detectChanges();
     }, this.eventTarget);
 
     this.updateXmlPreview();
-  }
-
-  ngAfterViewInit(): void {
-    this.mountCurrentEditor();
   }
 
   ngOnDestroy(): void {
@@ -222,6 +246,10 @@ export class App implements AfterViewInit, OnDestroy {
     const detail = (event as CustomEvent<{ title: string; identifier: string }>).detail;
     this.itemTitle = detail.title;
     this.identifier = detail.identifier;
+    if (this.composerRef) {
+      this.composerRef.nativeElement.identifier = this.identifier;
+      this.composerRef.nativeElement.title = this.itemTitle;
+    }
     this.updateXmlPreview();
   }
 
@@ -260,15 +288,16 @@ export class App implements AfterViewInit, OnDestroy {
     }
   }
 
-  private mountCurrentEditor(): void {
-    if (!this.mountRef) return;
-
-    this.mountRef.nativeElement.innerHTML = '';
-    this.editor.mount(this.mountRef.nativeElement);
+  private mountCurrentEditor(el: HTMLElement): void {
+    el.innerHTML = '';
+    this.editor.mount(el);
 
     queueMicrotask(() => {
       if (this.toolbarRef) {
         this.toolbarRef.nativeElement.editor = this.editor;
+      }
+      if (this.slashMenuRef) {
+        this.slashMenuRef.nativeElement.editor = this.editor;
       }
       if (this.insertMenuRef) {
         this.insertMenuRef.nativeElement.editor = this.editor;
@@ -279,6 +308,12 @@ export class App implements AfterViewInit, OnDestroy {
       if (this.attributesPanelRef) {
         this.attributesPanelRef.nativeElement.editor = this.editor;
       }
+      if (this.composerRef) {
+        this.composerRef.nativeElement.editor = this.editor;
+        this.composerRef.nativeElement.identifier = this.identifier;
+        this.composerRef.nativeElement.title = this.itemTitle;
+        this.composerRef.nativeElement.lang = 'en';
+      }
     });
   }
 
@@ -287,7 +322,9 @@ export class App implements AfterViewInit, OnDestroy {
     this.content = null;
     this.selection = null;
     this.createEditorInstance(defaultContent);
-    this.mountCurrentEditor();
+    if (this._mountEl) {
+      this.ngZone.runOutsideAngular(() => this.mountCurrentEditor(this._mountEl!));
+    }
     this.updateXmlPreview();
   }
 

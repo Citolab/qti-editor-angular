@@ -89,20 +89,26 @@
   <section class="workspace">
     <section class="editor-shell">
       <div class="editor-toolbar">
-        <lit-editor-toolbar #toolbar class="editor-toolbar-host"></lit-editor-toolbar>
+        <div class="editor-toolbar-row">
+          <div class="editor-qti-tools">
+            <qti-interaction-insert-menu #insertMenu></qti-interaction-insert-menu>
+            <qti-convert-menu #convertMenu></qti-convert-menu>
+          </div>
+          <lit-editor-toolbar #toolbar class="editor-toolbar-host"></lit-editor-toolbar>
+        </div>
       </div>
 
       <div class="editor-viewport">
-        <div #mount class="editor-mount"></div>
+        <div class="editor-stage">
+          <div #mount class="editor-mount"></div>
+          <lit-editor-slash-menu #slashMenu class="editor-slash-menu"></lit-editor-slash-menu>
+        </div>
       </div>
 
-      <section class="composer-panel">
-        <div class="composer-header">
-          <h2>XML composer</h2>
-          <span>{{ selectionLabel() ?? 'Cursor only' }}</span>
-        </div>
-        <pre>{{ xmlPreview }}</pre>
-      </section>
+      <qti-composer
+        #composer
+        class="block shrink-0"
+      ></qti-composer>
     </section>
 
     <aside class="inspector-shell">
@@ -117,11 +123,6 @@
         #attributesPanel
         class="block inspector-block"
       ></qti-attributes-panel>
-
-      <section class="panel-card">
-        <h2>HTML</h2>
-        <pre>{{ content?.html || '&lt;qti-item-body /&gt;' }}</pre>
-      </section>
 
       @if (savedFiles.length) {
         <section class="panel-card">
