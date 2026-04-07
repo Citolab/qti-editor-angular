@@ -40,7 +40,7 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: pnpm build -- --configuration production --base-href /qti-editor-angular/
+        run: pnpm build --configuration production --base-href /qti-editor-angular/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
