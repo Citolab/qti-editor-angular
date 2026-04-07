@@ -1,4 +1,12 @@
-import 'prosekit/lit/autocomplete'
+import { AutocompleteEmpty, AutocompleteItem, AutocompleteList, AutocompletePopover } from 'prosekit/lit/autocomplete'
+
+// prosekit sets sideEffects:false, causing bare imports to be removed by esbuild in
+// production builds. Referencing the constructors forces inclusion of the element
+// registration code from @prosekit/web/autocomplete (which sets sideEffects:true).
+if (!customElements.get('prosekit-autocomplete-popover')) customElements.define('prosekit-autocomplete-popover', AutocompletePopover)
+if (!customElements.get('prosekit-autocomplete-list')) customElements.define('prosekit-autocomplete-list', AutocompleteList)
+if (!customElements.get('prosekit-autocomplete-item')) customElements.define('prosekit-autocomplete-item', AutocompleteItem)
+if (!customElements.get('prosekit-autocomplete-empty')) customElements.define('prosekit-autocomplete-empty', AutocompleteEmpty)
 
 import { html, LitElement } from 'lit';
 import { canUseRegexLookbehind } from 'prosekit/core'

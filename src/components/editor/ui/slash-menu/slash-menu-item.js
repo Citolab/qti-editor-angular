@@ -1,4 +1,5 @@
-import 'prosekit/lit/autocomplete'
+import { AutocompleteItem } from 'prosekit/lit/autocomplete'
+if (!customElements.get('prosekit-autocomplete-item')) customElements.define('prosekit-autocomplete-item', AutocompleteItem)
 
 import { html, LitElement } from 'lit'
 
