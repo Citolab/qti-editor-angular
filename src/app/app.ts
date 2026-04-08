@@ -23,6 +23,7 @@ import '../components/editor/ui/button/index.js';
 import '../components/editor/ui/image-upload-popover/index.js';
 import '../components/editor/ui/slash-menu/index.js';
 import '../components/editor/ui/toolbar/index.js';
+import { sampleUploader } from '../components/editor/sample/sample-uploader';
 import '../components/blocks/composer/index';
 import '../components/blocks/composer-metadata-form/index';
 import '../components/blocks/attributes-panel/index';
@@ -88,7 +89,10 @@ export class App implements OnDestroy {
   }
 
   @ViewChild('toolbar', { static: true })
-  private readonly toolbarRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
+  private readonly toolbarRef?: ElementRef<HTMLElement & {
+    editor: Editor | null;
+    uploader?: typeof sampleUploader;
+  }>;
 
   @ViewChild('slashMenu', { static: true })
   private readonly slashMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
@@ -295,6 +299,7 @@ export class App implements OnDestroy {
     queueMicrotask(() => {
       if (this.toolbarRef) {
         this.toolbarRef.nativeElement.editor = this.editor;
+        this.toolbarRef.nativeElement.uploader = sampleUploader;
       }
       if (this.slashMenuRef) {
         this.slashMenuRef.nativeElement.editor = this.editor;
