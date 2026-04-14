@@ -83,6 +83,10 @@ class SlashMenuElement extends LitElement {
     return this.editor?.view ?? null
   }
 
+  getEditor() {
+    return this.editor ?? null
+  }
+
   attachEditorListener() {
     this.detachEditorListener()
     if (!this.editor) return
@@ -116,11 +120,20 @@ class SlashMenuElement extends LitElement {
     }
   }
 
-  runCommand = (command) => {
+  runViewCommand = (command) => {
     const view = this.getView()
     if (!view) return
     this.restoreSelection()
     command(view)
+    view.focus()
+  };
+
+  runEditorCommand = (command) => {
+    const editor = this.getEditor()
+    const view = this.getView()
+    if (!editor || !view) return
+    this.restoreSelection()
+    command(editor)
     view.focus()
   };
 
@@ -167,7 +180,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Choice interaction"
                 ?disabled=${!canInsert(view, schema.nodes.qtiChoiceInteraction)}
-                @select=${() => this.runCommand((currentView) => insertChoiceInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertChoiceInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -177,7 +190,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Inline choice"
                 ?disabled=${isSelectionInsideNodeType(view, schema.nodes.qtiInlineChoiceInteraction) || !canInsert(view, schema.nodes.qtiInlineChoiceInteraction)}
-                @select=${() => this.runCommand((currentView) => insertInlineChoiceInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertInlineChoiceInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -197,7 +210,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Extended text"
                 ?disabled=${!canInsert(view, schema.nodes.qtiExtendedTextInteraction)}
-                @select=${() => this.runCommand((currentView) => insertExtendedTextInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertExtendedTextInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -207,7 +220,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Match interaction"
                 ?disabled=${!canInsert(view, schema.nodes.qtiMatchInteraction)}
-                @select=${() => this.runCommand((currentView) => insertMatchInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertMatchInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -217,7 +230,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Associate interaction"
                 ?disabled=${!canInsert(view, schema.nodes.qtiAssociateInteraction)}
-                @select=${() => this.runCommand((currentView) => insertAssociateInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertAssociateInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -227,7 +240,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Order interaction"
                 ?disabled=${!canInsert(view, schema.nodes.qtiOrderInteraction)}
-                @select=${() => this.runCommand((currentView) => insertOrderInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertOrderInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -237,7 +250,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Hottext interaction"
                 ?disabled=${!canInsert(view, schema.nodes.qtiHottextInteraction)}
-                @select=${() => this.runCommand((currentView) => insertHottextInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertHottextInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -247,7 +260,7 @@ class SlashMenuElement extends LitElement {
                 class="contents"
                 label="Select point"
                 ?disabled=${!canInsert(view, schema.nodes.qtiSelectPointInteraction)}
-                @select=${() => this.runCommand((currentView) => insertSelectPointInteraction(currentView.state, currentView.dispatch, currentView))}
+                @select=${() => this.runViewCommand((currentView) => insertSelectPointInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}
@@ -259,72 +272,72 @@ class SlashMenuElement extends LitElement {
         <lit-editor-slash-menu-item
           class="contents"
           label="Text"
-          @select=${() => this.runCommand((view) => view.commands.setParagraph())}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.setParagraph())}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Heading 1"
           kbd="#"
-          @select=${() => this.runCommand((view) => view.commands.setHeading({ level: 1 }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.setHeading({ level: 1 }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Heading 2"
           kbd="##"
-          @select=${() => this.runCommand((view) => view.commands.setHeading({ level: 2 }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.setHeading({ level: 2 }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Heading 3"
           kbd="###"
-          @select=${() => this.runCommand((view) => view.commands.setHeading({ level: 3 }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.setHeading({ level: 3 }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Bullet list"
           kbd="-"
-          @select=${() => this.runCommand((view) => view.commands.wrapInList({ kind: 'bullet' }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.wrapInList({ kind: 'bullet' }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Ordered list"
           kbd="1."
-          @select=${() => this.runCommand((view) => view.commands.wrapInList({ kind: 'ordered' }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.wrapInList({ kind: 'ordered' }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Task list"
           kbd="[]"
-          @select=${() => this.runCommand((view) => view.commands.wrapInList({ kind: 'task' }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.wrapInList({ kind: 'task' }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Toggle list"
           kbd=">>"
-          @select=${() => this.runCommand((view) => view.commands.wrapInList({ kind: 'toggle' }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.wrapInList({ kind: 'toggle' }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Quote"
           kbd=">"
-          @select=${() => this.runCommand((view) => view.commands.setBlockquote())}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.setBlockquote())}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Table"
-          @select=${() => this.runCommand((view) => view.commands.insertTable({ row: 3, col: 3 }))}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.insertTable({ row: 3, col: 3 }))}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Divider"
           kbd="---"
-          @select=${() => this.runCommand((view) => view.commands.insertHorizontalRule())}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.insertHorizontalRule())}
         ></lit-editor-slash-menu-item>
         <lit-editor-slash-menu-item
           class="contents"
           label="Code"
           kbd="\`\`\`"
-          @select=${() => this.runCommand((view) => view.commands.setCodeBlock())}
+          @select=${() => this.runEditorCommand((editor) => editor.commands.setCodeBlock())}
         ></lit-editor-slash-menu-item>
 
         <lit-editor-slash-menu-empty class="contents"></lit-editor-slash-menu-empty>

@@ -11,6 +11,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { buildAssessmentItemXml } from '@qti-editor/core/composer';
 import { createEditor, union, type Editor } from 'prosekit/core';
+import { ListDOMSerializer } from 'prosekit/extensions/list';
 import {
   blockSelectExtension,
   defineLocalStorageDocPersistenceExtension,
@@ -22,6 +23,7 @@ import {
 import '../components/editor/ui/button/index.js';
 import '../components/editor/ui/image-upload-popover/index.js';
 import '../components/editor/ui/slash-menu/index.js';
+import '../components/editor/ui/table-handle/index.js';
 import '../components/editor/ui/toolbar/index.js';
 import { sampleUploader } from '../components/editor/sample/sample-uploader';
 import '../components/blocks/composer/index';
@@ -96,6 +98,9 @@ export class App implements OnDestroy {
 
   @ViewChild('slashMenu', { static: true })
   private readonly slashMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
+
+  @ViewChild('tableHandle', { static: true })
+  private readonly tableHandleRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
 
   @ViewChild('insertMenu', { static: true })
   private readonly insertMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
@@ -304,6 +309,9 @@ export class App implements OnDestroy {
       if (this.slashMenuRef) {
         this.slashMenuRef.nativeElement.editor = this.editor;
       }
+      if (this.tableHandleRef) {
+        this.tableHandleRef.nativeElement.editor = this.editor;
+      }
       if (this.insertMenuRef) {
         this.insertMenuRef.nativeElement.editor = this.editor;
       }
@@ -334,7 +342,15 @@ export class App implements OnDestroy {
   }
 
   private currentXml(): string {
-    const xmlCompatibleHtml = this.toXmlCompatibleFragment(this.content?.html ?? '');
+    const doc = this.editor?.state?.doc;
+    if (!doc) return '';
+
+    const serializer = ListDOMSerializer.fromSchema(doc.type.schema);
+    const fragment = serializer.serializeFragment(doc.content);
+    const container = document.createElement('div');
+    container.appendChild(fragment);
+
+    const xmlCompatibleHtml = this.toXmlCompatibleFragment(container.innerHTML);
     const itemBody = new DOMParser().parseFromString(
       `<qti-item-body>${xmlCompatibleHtml}</qti-item-body>`,
       'application/xml',

@@ -90,6 +90,13 @@ function getToolbarItems(editor) {
           command: () => editor.commands.insertHorizontalRule(),
         }
       : undefined,
+    table: editor.commands.insertTable
+      ? {
+          isActive: false,
+          canExec: editor.commands.insertTable.canExec({ row: 3, col: 3 }),
+          command: () => editor.commands.insertTable({ row: 3, col: 3 }),
+        }
+      : undefined,
     blockquote: editor.commands.toggleBlockquote
       ? {
           isActive: editor.nodes.blockquote.isActive(),
@@ -370,6 +377,19 @@ class LitToolbar extends LitElement {
                 tooltip="Blockquote"
                 icon="i-lucide-text-quote size-5 block"
                 @click=${items.blockquote.command}
+              ></lit-editor-button>
+            `
+            : nothing
+        }
+        ${
+          items.table
+            ? html`
+              <lit-editor-button
+                .pressed=${items.table.isActive}
+                .disabled=${!items.table.canExec}
+                tooltip="Table"
+                icon="i-lucide-table-properties size-5 block"
+                @click=${items.table.command}
               ></lit-editor-button>
             `
             : nothing

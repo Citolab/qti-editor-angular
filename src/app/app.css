@@ -279,6 +279,10 @@ h2 {
   display: contents;
 }
 
+.editor-table-handle {
+  display: contents;
+}
+
 .composer-panel {
   flex-shrink: 0;
   border-top: 1px solid rgba(27, 43, 39, 0.08);
