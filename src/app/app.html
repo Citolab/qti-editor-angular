@@ -124,23 +124,6 @@
         class="block inspector-block"
       ></qti-attributes-panel>
 
-      @if (savedFiles.length) {
-        <section class="panel-card">
-          <h2>Saved files</h2>
-          <div class="saved-files">
-            @for (file of savedFiles; track trackFile($index, file)) {
-              <div class="saved-file-row">
-                <button type="button" class="saved-file-link" (click)="loadFile(file.id)">
-                  {{ file.name }}
-                </button>
-                <button type="button" class="saved-file-delete" (click)="deleteFile(file.id)">
-                  Delete
-                </button>
-              </div>
-            }
-          </div>
-        </section>
-      }
     </aside>
   </section>
 </main>

@@ -9,7 +9,8 @@ if (!customElements.get('prosekit-autocomplete-item')) customElements.define('pr
 if (!customElements.get('prosekit-autocomplete-empty')) customElements.define('prosekit-autocomplete-empty', AutocompleteEmpty)
 
 import { html, LitElement } from 'lit';
-import { canUseRegexLookbehind } from 'prosekit/core'
+import { canUseRegexLookbehind, defineUpdateHandler } from 'prosekit/core'
+import { Selection } from 'prosekit/pm/state'
 import { insertChoiceInteraction } from '@qti-editor/interaction-choice';
 import { insertExtendedTextInteraction } from '@qti-editor/interaction-extended-text';
 import { insertInlineChoiceInteraction } from '@qti-editor/interaction-inline-choice';
@@ -35,6 +36,18 @@ function canInsert(view, nodeType) {
   return false;
 }
 
+function isSelectionInsideNodeType(view, nodeType) {
+  const { $from } = view.state.selection;
+
+  for (let depth = $from.depth; depth >= 0; depth -= 1) {
+    if ($from.node(depth).type === nodeType) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 class SlashMenuElement extends LitElement {
   static properties = {
     editor: {
@@ -42,17 +55,71 @@ class SlashMenuElement extends LitElement {
     },
   };
 
+  removeUpdateExtension;
+  lastSelectionJson = null;
+
   createRenderRoot() {
     return this
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    this.attachEditorListener()
+  }
+
+  disconnectedCallback() {
+    this.detachEditorListener()
+    super.disconnectedCallback()
+  }
+
+  updated(changedProperties) {
+    super.updated(changedProperties)
+    if (changedProperties.has('editor')) {
+      this.attachEditorListener()
+    }
   }
 
   getView() {
     return this.editor?.view ?? null
   }
 
+  attachEditorListener() {
+    this.detachEditorListener()
+    if (!this.editor) return
+    this.removeUpdateExtension = this.editor.use(defineUpdateHandler(() => {
+      this.snapshotSelection()
+      this.requestUpdate()
+    }))
+    this.snapshotSelection()
+  }
+
+  detachEditorListener() {
+    this.removeUpdateExtension?.()
+    this.removeUpdateExtension = undefined
+  }
+
+  snapshotSelection() {
+    const view = this.getView()
+    if (!view) return
+    this.lastSelectionJson = view.state.selection.toJSON()
+  }
+
+  restoreSelection() {
+    const view = this.getView()
+    if (!view || !this.lastSelectionJson) return
+
+    try {
+      const restored = Selection.fromJSON(view.state.doc, this.lastSelectionJson)
+      view.dispatch(view.state.tr.setSelection(restored))
+    } catch {
+      return
+    }
+  }
+
   runCommand = (command) => {
     const view = this.getView()
     if (!view) return
+    this.restoreSelection()
     command(view)
     view.focus()
   };
@@ -60,6 +127,8 @@ class SlashMenuElement extends LitElement {
   insertTextEntry = () => {
     const view = this.getView()
     if (!view) return
+
+    this.restoreSelection()
 
     const nodeType = view.state.schema.nodes.qtiTextEntryInteraction
     if (!nodeType) return
@@ -107,7 +176,7 @@ class SlashMenuElement extends LitElement {
               <lit-editor-slash-menu-item
                 class="contents"
                 label="Inline choice"
-                ?disabled=${!canInsert(view, schema.nodes.qtiInlineChoiceInteraction)}
+                ?disabled=${isSelectionInsideNodeType(view, schema.nodes.qtiInlineChoiceInteraction) || !canInsert(view, schema.nodes.qtiInlineChoiceInteraction)}
                 @select=${() => this.runCommand((currentView) => insertInlineChoiceInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
