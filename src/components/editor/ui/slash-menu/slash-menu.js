@@ -13,6 +13,8 @@ import { canUseRegexLookbehind } from 'prosekit/core'
 import { insertChoiceInteraction } from '@qti-editor/interaction-choice';
 import { insertExtendedTextInteraction } from '@qti-editor/interaction-extended-text';
 import { insertInlineChoiceInteraction } from '@qti-editor/interaction-inline-choice';
+import { insertAssociateInteraction } from '@qti-editor/interaction-associate';
+import { insertHottextInteraction } from '@qti-editor/interaction-hottext';
 import { insertMatchInteraction } from '@qti-editor/interaction-match';
 import { insertOrderInteraction } from '@qti-editor/interaction-order';
 import { insertSelectPointInteraction } from '@qti-editor/interaction-select-point';
@@ -140,6 +142,16 @@ class SlashMenuElement extends LitElement {
               ></lit-editor-slash-menu-item>
             `
           : ''}
+        ${schema?.nodes.qtiAssociateInteraction
+          ? html`
+              <lit-editor-slash-menu-item
+                class="contents"
+                label="Associate interaction"
+                ?disabled=${!canInsert(view, schema.nodes.qtiAssociateInteraction)}
+                @select=${() => this.runCommand((currentView) => insertAssociateInteraction(currentView.state, currentView.dispatch, currentView))}
+              ></lit-editor-slash-menu-item>
+            `
+          : ''}
         ${schema?.nodes.qtiOrderInteraction
           ? html`
               <lit-editor-slash-menu-item
@@ -147,6 +159,16 @@ class SlashMenuElement extends LitElement {
                 label="Order interaction"
                 ?disabled=${!canInsert(view, schema.nodes.qtiOrderInteraction)}
                 @select=${() => this.runCommand((currentView) => insertOrderInteraction(currentView.state, currentView.dispatch, currentView))}
+              ></lit-editor-slash-menu-item>
+            `
+          : ''}
+        ${schema?.nodes.qtiHottextInteraction
+          ? html`
+              <lit-editor-slash-menu-item
+                class="contents"
+                label="Hottext interaction"
+                ?disabled=${!canInsert(view, schema.nodes.qtiHottextInteraction)}
+                @select=${() => this.runCommand((currentView) => insertHottextInteraction(currentView.state, currentView.dispatch, currentView))}
               ></lit-editor-slash-menu-item>
             `
           : ''}

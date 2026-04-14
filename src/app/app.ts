@@ -9,8 +9,8 @@ import {
   inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { buildAssessmentItemXml } from '@qti-editor/core/composer';
 import { createEditor, union, type Editor } from 'prosekit/core';
-import { buildAssessmentItemXml } from '@qti-editor/core';
 import {
   blockSelectExtension,
   defineLocalStorageDocPersistenceExtension,

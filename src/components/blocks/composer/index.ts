@@ -1,8 +1,8 @@
 import { html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { buildAssessmentItemXml, formatXml } from '@qti-editor/core/composer';
 import { defineDocChangeHandler, defineMountHandler, union, type Editor } from 'prosekit/core';
 import { ListDOMSerializer } from 'prosekit/extensions/list';
-import { buildAssessmentItemXml, formatXml } from '@qti-editor/core';
 
 const DEBOUNCE_MS = 300;
 const VOID_HTML_TAGS = ['img', 'br', 'hr', 'input', 'meta', 'link', 'source', 'area', 'col', 'embed', 'param', 'track', 'wbr'];

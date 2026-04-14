@@ -11,6 +11,8 @@ import { insertMatchInteraction } from '@qti-editor/interaction-match';
 import { insertOrderInteraction } from '@qti-editor/interaction-order';
 import { insertSelectPointInteraction } from '@qti-editor/interaction-select-point';
 import { insertInlineChoiceInteraction } from '@qti-editor/interaction-inline-choice';
+import { insertAssociateInteraction } from '@qti-editor/interaction-associate';
+import { insertHottextInteraction } from '@qti-editor/interaction-hottext';
 
 import type { EditorView } from 'prosekit/pm/view';
 
@@ -35,6 +37,16 @@ function canInsert(view: EditorView, nodeType: any): boolean {
   for (let depth = $from.depth; depth >= 0; depth -= 1) {
     const index = $from.index(depth);
     if ($from.node(depth).canReplaceWith(index, index, nodeType)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isSelectionInsideNodeType(view: EditorView, nodeType: any): boolean {
+  const { $from } = view.state.selection;
+  for (let depth = $from.depth; depth >= 0; depth -= 1) {
+    if ($from.node(depth).type === nodeType) {
       return true;
     }
   }
@@ -93,7 +105,7 @@ function getInteractionInsertItems(view: EditorView): InteractionInsertItem[] {
     const nodeType = schema.nodes.qtiInlineChoiceInteraction;
     items.push({
       label: translateQti('interactionInsert.inlineChoice', { target: view.dom }),
-      canInsert: canInsert(view, nodeType),
+      canInsert: !isSelectionInsideNodeType(view, nodeType) && canInsert(view, nodeType),
       command: () => {
         insertInlineChoiceInteraction(view.state, view.dispatch, view);
         view.focus();
@@ -113,6 +125,21 @@ function getInteractionInsertItems(view: EditorView): InteractionInsertItem[] {
     });
   }
 
+  if (
+    schema.nodes.qtiAssociateInteraction &&
+    schema.nodes.qtiSimpleAssociableChoice
+  ) {
+    const nodeType = schema.nodes.qtiAssociateInteraction;
+    items.push({
+      label: translateQti('interactionInsert.associate', { target: view.dom }),
+      canInsert: canInsert(view, nodeType),
+      command: () => {
+        insertAssociateInteraction(view.state, view.dispatch, view);
+        view.focus();
+      },
+    });
+  }
+
   if (schema.nodes.qtiOrderInteraction && schema.nodes.qtiSimpleChoice) {
     const nodeType = schema.nodes.qtiOrderInteraction;
     items.push({
@@ -120,6 +147,18 @@ function getInteractionInsertItems(view: EditorView): InteractionInsertItem[] {
       canInsert: canInsert(view, nodeType),
       command: () => {
         insertOrderInteraction(view.state, view.dispatch, view);
+        view.focus();
+      },
+    });
+  }
+
+  if (schema.nodes.qtiHottextInteraction && schema.nodes.qtiHottext) {
+    const nodeType = schema.nodes.qtiHottextInteraction;
+    items.push({
+      label: translateQti('interactionInsert.hottext', { target: view.dom }),
+      canInsert: canInsert(view, nodeType),
+      command: () => {
+        insertHottextInteraction(view.state, view.dispatch, view);
         view.focus();
       },
     });
