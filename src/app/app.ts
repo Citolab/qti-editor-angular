@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { buildAssessmentItemXml } from '@qti-editor/core/composer';
 import { createEditor, union, type Editor } from 'prosekit/core';
 import { ListDOMSerializer } from 'prosekit/extensions/list';
+import { definePlaceholder } from 'prosekit/extensions/placeholder';
 import {
   blockSelectExtension,
   defineLocalStorageDocPersistenceExtension,
@@ -274,6 +275,7 @@ export class App implements OnDestroy {
       blockSelectExtension,
       nodeAttrsSyncExtension,
       qtiEditorEventsExtension({ eventTarget: this.eventTarget }),
+      definePlaceholder({ placeholder: 'Typ / voor opdrachten', strategy: 'block' }),
     );
 
     if (defaultContent) {

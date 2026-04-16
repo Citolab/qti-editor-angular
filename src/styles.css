@@ -1,6 +1,7 @@
 @import '@qti-components/theme/item.css';
 @import 'prosekit/basic/style.css';
 @import 'prosekit/basic/typography.css';
+@import 'prosekit/extensions/placeholder/style.css';
 @import "tailwindcss";
 @variant dark (&:is(.dark *));
 
