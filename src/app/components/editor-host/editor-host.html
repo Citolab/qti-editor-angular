@@ -1,0 +1,38 @@
+<section class="editor-shell">
+  <div class="editor-toolbar">
+    <div class="editor-toolbar-row">
+      <div class="editor-qti-tools">
+        <qti-interaction-insert-menu #insertMenu></qti-interaction-insert-menu>
+        <qti-convert-menu #convertMenu></qti-convert-menu>
+      </div>
+      <lit-editor-toolbar #toolbar class="editor-toolbar-host"></lit-editor-toolbar>
+    </div>
+  </div>
+
+  <div class="editor-viewport">
+    <div class="editor-stage">
+      <div #mount class="editor-mount"></div>
+      <lit-editor-table-handle #tableHandle class="editor-table-handle"></lit-editor-table-handle>
+      <lit-editor-slash-menu #slashMenu class="editor-slash-menu"></lit-editor-slash-menu>
+    </div>
+  </div>
+
+  <qti-composer
+    #composer
+    class="block shrink-0"
+  ></qti-composer>
+</section>
+
+<aside class="inspector-shell">
+  <qti-composer-metadata-form
+    class="block inspector-block"
+    [title]="itemTitle()"
+    [identifier]="identifier()"
+    (metadata-change)="onMetadataChange($event)"
+  ></qti-composer-metadata-form>
+
+  <qti-attributes-panel
+    #attributesPanel
+    class="block inspector-block"
+  ></qti-attributes-panel>
+</aside>

@@ -1,0 +1,96 @@
+:host {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 28rem);
+  gap: 1rem;
+  padding: 1rem;
+  min-height: 0;
+  flex: 1;
+}
+
+@media (max-width: 1100px) {
+  :host {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-shell {
+    min-height: 34rem;
+  }
+}
+
+.editor-shell,
+.panel-card {
+  border: 1px solid rgba(27, 43, 39, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 60px rgba(22, 58, 50, 0.08);
+}
+
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  border-bottom: 1px solid rgba(27, 43, 39, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  flex-shrink: 0;
+}
+
+.editor-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-left: 0.75rem;
+}
+
+.editor-qti-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.editor-toolbar-host {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+
+.editor-viewport {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  background: linear-gradient(180deg, rgba(247, 249, 248, 0.88), rgba(255, 255, 255, 0.98));
+}
+
+.editor-stage {
+  position: relative;
+  min-height: 100%;
+}
+
+.editor-mount {
+  min-height: 100%;
+  padding: 1.5rem;
+}
+
+.editor-slash-menu {
+  display: contents;
+}
+
+.editor-table-handle {
+  display: contents;
+}
+
+.inspector-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+.inspector-block {
+  flex-shrink: 0;
+}
