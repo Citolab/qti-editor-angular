@@ -1,0 +1,71 @@
+@if (textEntryNode() && classState(); as state) {
+  <section class="rounded-xl border border-base-300/60 bg-base-100/80 p-3">
+    <div class="mb-3">
+      <div class="text-sm font-semibold">Text entry</div>
+      <div class="text-xs text-base-content/70">
+        Configure width, accepted answers, and case sensitivity.
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <label class="form-control w-full">
+        <span class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/70">
+          Width preset
+        </span>
+        <select
+          class="select select-sm select-bordered w-full"
+          [value]="state.widthClass ?? ''"
+          (change)="onWidthChange($event)"
+        >
+          <option value="">Auto</option>
+          @for (option of widthOptions; track option) {
+            <option [value]="option">{{ widthOptionLabels[option] }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="flex items-center justify-between gap-3 rounded-lg border border-base-300/60 p-2">
+        <span class="text-sm font-medium">Case sensitive answers</span>
+        <input
+          type="checkbox"
+          class="checkbox checkbox-sm"
+          [checked]="caseSensitive()"
+          (change)="onCaseSensitiveChange($event)"
+        />
+      </label>
+
+      <div class="flex flex-col gap-2">
+        <div class="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+          Accepted answers
+        </div>
+        @if (correctResponses().length === 0) {
+          <div class="text-xs text-base-content/60">No accepted answers configured yet.</div>
+        }
+        @for (response of correctResponses(); track $index) {
+          <div class="flex items-center gap-2">
+            <input
+              type="text"
+              class="input input-sm input-bordered w-full"
+              [value]="response"
+              (input)="updateResponse($index, $event)"
+            />
+            <button
+              type="button"
+              class="btn btn-sm btn-ghost"
+              (click)="removeResponse($index)"
+            >
+              Remove
+            </button>
+          </div>
+        }
+        <button
+          type="button"
+          class="btn btn-sm btn-outline self-start"
+          (click)="addResponse()"
+        >
+          Add synonym
+        </button>
+      </div>
+    </div>
+  </section>
+}

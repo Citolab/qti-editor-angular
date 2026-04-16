@@ -10,6 +10,7 @@ import {
   inject,
   input,
   output,
+  signal,
 } from '@angular/core';
 import { buildAssessmentItemXml } from '@qti-editor/core/composer';
 import { createEditor, union, type Editor } from 'prosekit/core';
@@ -31,9 +32,9 @@ import '../../../components/editor/ui/toolbar/index.js';
 import { sampleUploader } from '../../../components/editor/sample/sample-uploader';
 import '../../../components/blocks/composer/index';
 import '../../../components/blocks/composer-metadata-form/index';
-import '../../../components/blocks/attributes-panel/index';
 import '../../../components/blocks/interaction-insert-menu/index';
 import '../../../components/blocks/convert-menu/index';
+import { AttributesPanelComponent, type AttributePanelOverrides } from '../attributes-panel/attributes-panel.component';
 import {
   onQtiContentChange,
   qtiEditorEventsExtension,
@@ -51,6 +52,7 @@ const VOID_TAG_PATTERN = new RegExp(`<(${VOID_HTML_TAGS.join('|')})(\\s[^<>]*?)?
 
 @Component({
   selector: 'app-editor-host',
+  imports: [AttributesPanelComponent],
   templateUrl: './editor-host.html',
   styleUrl: './editor-host.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -59,6 +61,7 @@ const VOID_TAG_PATTERN = new RegExp(`<(${VOID_HTML_TAGS.join('|')})(\\s[^<>]*?)?
 export class EditorHostComponent implements OnDestroy {
   readonly identifier = input('ANGULAR_QTI_ITEM');
   readonly itemTitle = input('Angular QTI Item');
+  readonly attributePanelOverrides = input<AttributePanelOverrides | null>(null);
 
   readonly contentChange = output<QtiContentChangeEventDetail>();
   readonly metadataChange = output<{ title: string; identifier: string }>();
@@ -96,8 +99,7 @@ export class EditorHostComponent implements OnDestroy {
   @ViewChild('convertMenu', { static: true })
   private readonly convertMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
 
-  @ViewChild('attributesPanel', { static: true })
-  private readonly attributesPanelRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
+  protected readonly editorRef = signal<Editor | null>(null);
 
   @ViewChild('composer', { static: true })
   private readonly composerRef?: ElementRef<HTMLElement & {
@@ -127,6 +129,7 @@ export class EditorHostComponent implements OnDestroy {
       ref.nativeElement.identifier = this.identifier();
       ref.nativeElement.title = this.itemTitle();
     });
+
   }
 
   ngOnDestroy(): void {
@@ -135,6 +138,7 @@ export class EditorHostComponent implements OnDestroy {
   }
 
   public replaceEditor(defaultContent?: QtiContentChangeEventDetail['json']): void {
+    this.editorRef.set(null);
     this.editor.view?.destroy();
     if (!defaultContent) {
       window.localStorage.removeItem(STORAGE_KEY);
@@ -234,9 +238,7 @@ export class EditorHostComponent implements OnDestroy {
       if (this.convertMenuRef) {
         this.convertMenuRef.nativeElement.editor = this.editor;
       }
-      if (this.attributesPanelRef) {
-        this.attributesPanelRef.nativeElement.editor = this.editor;
-      }
+      this.editorRef.set(this.editor);
       if (this.composerRef) {
         this.composerRef.nativeElement.editor = this.editor;
         this.composerRef.nativeElement.identifier = this.identifier();

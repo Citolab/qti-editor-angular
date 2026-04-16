@@ -31,8 +31,9 @@
     (metadata-change)="onMetadataChange($event)"
   ></qti-composer-metadata-form>
 
-  <qti-attributes-panel
-    #attributesPanel
+  <app-attributes-panel
     class="block inspector-block"
-  ></qti-attributes-panel>
+    [editor]="editorRef()"
+    [panelOverrides]="attributePanelOverrides()"
+  />
 </aside>

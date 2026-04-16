@@ -9,6 +9,7 @@ import {
 
 import { EditorHostComponent } from './components/editor-host/editor-host';
 import { MenuBarComponent } from './components/menu-bar/menu-bar';
+import { ATTRIBUTE_PANEL_OVERRIDES } from './overrides/attribute-panel-overrides';
 import { FileStorageService } from './services/file-storage.service';
 import type { SavedFileRecord } from './shared/file-record';
 import type { QtiContentChangeEventDetail } from '../lib/qti-prosekit-integration/events';
@@ -22,6 +23,7 @@ import type { QtiContentChangeEventDetail } from '../lib/qti-prosekit-integratio
 })
 export class App {
   protected readonly appTitle = 'QTI Editor';
+  protected readonly attributePanelOverrides = ATTRIBUTE_PANEL_OVERRIDES;
 
   protected readonly fileName = signal('angular-qti-item');
   protected readonly identifier = signal('ANGULAR_QTI_ITEM');

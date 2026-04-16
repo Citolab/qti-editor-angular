@@ -1,11 +1,15 @@
-import { listInteractionDescriptors, listInteractionPluginFactories } from '@qti-editor/core/interactions/composer';
+import { listInteractionDescriptors } from '@qti-editor/core/interactions/composer';
 import { defineBasicExtension } from 'prosekit/basic';
 import { defineKeymap, defineNodeSpec, definePlugin, union, type Extension } from 'prosekit/core';
 
 import type { Command } from 'prosekit/pm/state';
 
-export function defineQtiInteractionsExtension() {
-  const descriptors = listInteractionDescriptors();
+export function defineQtiInteractionsExtension(options?: { include?: string[] }): Extension {
+  const allDescriptors = listInteractionDescriptors();
+  const descriptors = options?.include
+    ? allDescriptors.filter((d) => options.include!.includes(d.tagName))
+    : allDescriptors;
+
   const seenSpecs = new Set<string>();
   const nodeSpecExtensions: Extension[] = [];
 
@@ -33,9 +37,9 @@ export function defineQtiInteractionsExtension() {
     }
   }
 
-  const pluginExtensions = listInteractionPluginFactories().map((pluginFactory) =>
-    definePlugin(pluginFactory),
-  );
+  const pluginExtensions = descriptors
+    .flatMap((d) => d.pluginFactories ?? [])
+    .map((pluginFactory) => definePlugin(pluginFactory));
 
   return union(...nodeSpecExtensions, defineKeymap(keymap), ...pluginExtensions);
 }

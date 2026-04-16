@@ -15,6 +15,7 @@ import {
 import {
   ProsekitAttributesPanel,
   type AttributeFriendlyEditorDefinition,
+  type AttributeFieldDefinition,
   type AttributesNodeDetail,
   type NodeAttributePanelMetadata,
 } from '@qti-editor/prosemirror-attributes-ui-prosekit';
@@ -26,10 +27,28 @@ import { type QtiAttributesPatchDetail } from './patch-event';
 
 export interface AttributesPanelExtensionOptions extends QtiAttributesOptions {}
 
+type AttributePanelSectionPlacement = 'top' | 'bottom';
+
+export interface AttributePanelNodeOverride {
+  editableAttributes?: readonly string[];
+  hiddenAttributes?: readonly string[];
+  removeFields?: readonly string[];
+  fieldOrder?: readonly string[];
+  fields?: Record<string, Partial<AttributeFieldDefinition>>;
+  friendlyEditors?: readonly AttributeFriendlyEditorDefinition[];
+  replaceFriendlyEditors?: boolean;
+  friendlyEditorsPlacement?: AttributePanelSectionPlacement;
+}
+
+export type AttributePanelOverrides = Record<string, AttributePanelNodeOverride>;
+
 @customElement('qti-attributes-panel')
 export class QtiAttributesPanel extends ProsekitAttributesPanel {
   @property({ attribute: false })
   choiceInteractionPresentation: ChoiceInteractionPanelPresentation | null = null;
+
+  @property({ attribute: false })
+  panelOverrides: AttributePanelOverrides | null = null;
 
   #editor: Editor | null = null;
   #internalEventTarget = new EventTarget();
@@ -71,8 +90,69 @@ export class QtiAttributesPanel extends ProsekitAttributesPanel {
         fields,
       };
 
-      return panelMetadata;
+      return this.applyPanelOverride(panelMetadata, nodeType);
     };
+  }
+
+  private getPanelOverride(nodeType: string): AttributePanelNodeOverride | null {
+    const normalizedNodeType = nodeType.toLowerCase();
+    return this.panelOverrides?.[nodeType] ?? this.panelOverrides?.[normalizedNodeType] ?? null;
+  }
+
+  private applyPanelOverride(
+    panelMetadata: NodeAttributePanelMetadata,
+    nodeType: string,
+  ): NodeAttributePanelMetadata {
+    const override = this.getPanelOverride(nodeType);
+    if (!override) return panelMetadata;
+
+    const hiddenAttributes = new Set(panelMetadata.hiddenAttributes ?? []);
+    for (const fieldName of override.hiddenAttributes ?? []) hiddenAttributes.add(fieldName);
+    for (const fieldName of override.removeFields ?? []) hiddenAttributes.add(fieldName);
+
+    const fields = { ...(panelMetadata.fields ?? {}) };
+    for (const fieldName of override.removeFields ?? []) {
+      delete fields[fieldName];
+    }
+
+    for (const [fieldName, fieldOverride] of Object.entries(override.fields ?? {})) {
+      fields[fieldName] = {
+        ...(fields[fieldName] ?? { label: fieldName }),
+        ...fieldOverride,
+      };
+    }
+
+    const baseFriendlyEditors = (panelMetadata.friendlyEditors ?? []) as AttributeFriendlyEditorDefinition[];
+    const friendlyEditors = override.replaceFriendlyEditors
+      ? [...(override.friendlyEditors ?? [])]
+      : [...baseFriendlyEditors, ...(override.friendlyEditors ?? [])];
+
+    return {
+      ...panelMetadata,
+      editableAttributes: override.editableAttributes
+        ? [...override.editableAttributes]
+        : panelMetadata.editableAttributes,
+      hiddenAttributes: [...hiddenAttributes],
+      friendlyEditors,
+      fields,
+    };
+  }
+
+  private sortAttrEntries(
+    entries: Array<[string, any]>,
+    fieldOrder: readonly string[] | undefined,
+  ): Array<[string, any]> {
+    if (!fieldOrder?.length) return entries;
+
+    const orderIndex = new Map(fieldOrder.map((fieldName, index) => [fieldName, index]));
+    return [...entries].sort(([a], [b]) => {
+      const aIndex = orderIndex.get(a);
+      const bIndex = orderIndex.get(b);
+      if (aIndex == null && bIndex == null) return 0;
+      if (aIndex == null) return 1;
+      if (bIndex == null) return -1;
+      return aIndex - bIndex;
+    });
   }
 
   #setupExtension() {
@@ -155,8 +235,36 @@ export class QtiAttributesPanel extends ProsekitAttributesPanel {
   protected override renderPanel(): TemplateResult {
     const activeNode = this.activeNode;
     const panelMetadata = this.getPanelMetadata(activeNode);
+    const nodeOverride = activeNode ? this.getPanelOverride(activeNode.type) : null;
     const friendlyEditors = panelMetadata?.friendlyEditors ?? [];
     const { editable, readOnly } = this.getAttrEntriesByEditability(activeNode);
+    const sortedEditable = this.sortAttrEntries(editable, nodeOverride?.fieldOrder);
+    const sortedReadOnly = this.sortAttrEntries(readOnly, nodeOverride?.fieldOrder);
+    const friendlyEditorsPlacement = nodeOverride?.friendlyEditorsPlacement ?? 'top';
+    const friendlyEditorTemplates = friendlyEditors.map(editor =>
+      this.renderFriendlyEditor(editor, activeNode),
+    );
+    const editableFieldsTemplate = sortedEditable.length
+      ? sortedEditable.map(([key, value]) =>
+          this.renderField(key, value, this.getFieldMetadata(key, value)),
+        )
+      : friendlyEditors.length
+        ? nothing
+        : html`<p class="text-sm text-base-content/70">No editable attributes.</p>`;
+    const readOnlyFieldsTemplate = sortedReadOnly.length
+      ? html`
+          <details class="rounded-lg border border-base-300/50 bg-base-50 p-2">
+            <summary class="cursor-pointer text-sm font-medium">
+              Read-only attributes (${sortedReadOnly.length})
+            </summary>
+            <div class="mt-3 flex flex-col gap-3 opacity-80">
+              ${sortedReadOnly.map(([key, value]) =>
+                this.renderField(key, value, this.getFieldMetadata(key, value), true),
+              )}
+            </div>
+          </details>
+        `
+      : nothing;
 
     return html`
       <section
@@ -167,30 +275,12 @@ export class QtiAttributesPanel extends ProsekitAttributesPanel {
         <div class="card-body gap-3 p-4">
           ${this.renderHeader(activeNode)} ${this.renderNodeSwitcher()}
           <div class="flex flex-col gap-3">
-            ${friendlyEditors.map(editor => this.renderFriendlyEditor(editor, activeNode))}
             ${activeNode
               ? html`
-                  ${editable.length
-                    ? editable.map(([key, value]) =>
-                        this.renderField(key, value, this.getFieldMetadata(key, value)),
-                      )
-                    : friendlyEditors.length
-                      ? nothing
-                      : html`<p class="text-sm text-base-content/70">No editable attributes.</p>`}
-                  ${readOnly.length
-                    ? html`
-                        <details class="rounded-lg border border-base-300/50 bg-base-50 p-2">
-                          <summary class="cursor-pointer text-sm font-medium">
-                            Read-only attributes (${readOnly.length})
-                          </summary>
-                          <div class="mt-3 flex flex-col gap-3 opacity-80">
-                            ${readOnly.map(([key, value]) =>
-                              this.renderField(key, value, this.getFieldMetadata(key, value), true),
-                            )}
-                          </div>
-                        </details>
-                      `
-                    : nothing}
+                  ${friendlyEditorsPlacement === 'top' ? friendlyEditorTemplates : nothing}
+                  ${editableFieldsTemplate}
+                  ${friendlyEditorsPlacement === 'bottom' ? friendlyEditorTemplates : nothing}
+                  ${readOnlyFieldsTemplate}
                 `
               : this.renderEmptyState()}
           </div>

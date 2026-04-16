@@ -22,6 +22,57 @@ The editor is built on [ProseMirror](https://prosemirror.net/) and leverages QTI
 
 For more details, see the [Angular integration guide](https://qti-editor.citolab.nl/docs/frameworks/angular/).
 
+## Attribute Panel Overrides
+
+This app includes an app-level override layer for the attributes panel. It lets you
+change which fields are shown, how they are labeled, and where they appear in the
+panel without changing `@qti-editor/core`.
+
+The override configuration lives in:
+
+- `src/app/overrides/attribute-panel-overrides.ts`
+
+The override type is exposed from:
+
+- `src/app/shared/attribute-panel-overrides.ts`
+
+Overrides are applied by the custom `qti-attributes-panel` implementation in:
+
+- `src/components/blocks/attributes-panel/index.ts`
+
+Supported override options per node type:
+
+- `editableAttributes`: replace the editable attribute list
+- `hiddenAttributes`: hide specific attributes from the panel
+- `removeFields`: remove specific fields entirely
+- `fieldOrder`: control the order of editable and read-only fields
+- `fields`: override field labels or input definitions
+- `friendlyEditors`: append custom friendly editors
+- `replaceFriendlyEditors`: replace the core friendly editor list instead of appending
+- `friendlyEditorsPlacement`: place friendly editors at the top or bottom of the editable section
+
+Example:
+
+```ts
+import type { AttributePanelOverrides } from '../shared/attribute-panel-overrides';
+
+export const ATTRIBUTE_PANEL_OVERRIDES: AttributePanelOverrides = {
+  qtitextentryinteraction: {
+    fieldOrder: ['responseIdentifier', 'expectedLength', 'placeholderText', 'class'],
+    hiddenAttributes: ['format'],
+    fields: {
+      responseIdentifier: { label: 'Response identifier' },
+      expectedLength: { label: 'Expected length', input: 'number' },
+    },
+    friendlyEditorsPlacement: 'bottom',
+  },
+};
+```
+
+Use this when the host app wants a different authoring experience than the shared
+QTI core metadata exposes by default. The core schema and attribute semantics stay
+the same; only the panel presentation changes.
+
 ## Development
 
 To start a local development server:

@@ -1,0 +1,166 @@
+<section class="card border border-base-300/50 bg-base-100">
+  <div class="card-body gap-3 p-4">
+
+    <!-- Header -->
+    <header class="flex items-start justify-between gap-3">
+      <div>
+        <h3 class="text-base font-semibold">Attributes</h3>
+        <p class="text-xs text-base-content/70">
+          {{ activeNode()?.type ?? 'No selection' }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Node switcher -->
+    @if (nodes().length > 1) {
+      <div class="flex flex-wrap gap-2">
+        @for (node of nodes(); track node.pos) {
+          <button
+            type="button"
+            class="btn btn-xs"
+            [class.btn-primary]="selectedIndex() === $index"
+            [class.btn-ghost]="selectedIndex() !== $index"
+            (click)="setSelectedNode($index)"
+          >
+            {{ node.type }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Panel body -->
+    <div class="flex flex-col gap-3">
+      @if (activeNode(); as node) {
+
+        <!-- Friendly editors: top placement -->
+        @if (friendlyEditorsPlacement() === 'top') {
+          @for (editor of friendlyEditors(); track editor.kind) {
+            @if (isChoiceEditor(editor)) {
+              <app-choice-attributes-editor
+                [activeNode]="node"
+                [presentation]="choiceInteractionPresentation()"
+                (patch)="handlePatch($event)"
+              />
+            }
+            @if (isTextEntryEditor(editor)) {
+              <app-text-entry-attributes-editor
+                [activeNode]="node"
+                (patch)="handlePatch($event)"
+              />
+            }
+          }
+        }
+
+        <!-- Editable fields -->
+        @if (sortedEditableEntries().length > 0) {
+          @for (entry of sortedEditableEntries(); track entry[0]) {
+            @let key = entry[0];
+            @let value = entry[1];
+            @let fieldMeta = getFieldMetadata(key, value);
+            @if (fieldMeta.input === 'checkbox') {
+              <label class="flex items-center justify-between gap-3">
+                <span class="text-sm font-medium">{{ fieldMeta.label ?? key }}</span>
+                <input
+                  class="checkbox checkbox-sm"
+                  type="checkbox"
+                  [checked]="!!value"
+                  (change)="handleFieldChange(key, value, $event)"
+                />
+              </label>
+            } @else if (fieldMeta.input === 'select') {
+              <label class="form-control w-full">
+                <span class="mb-1 text-sm font-medium">{{ fieldMeta.label ?? key }}</span>
+                <select
+                  class="select select-sm select-bordered w-full"
+                  [value]="value ?? ''"
+                  (change)="handleFieldChange(key, value, $event)"
+                >
+                  <option value="">Select…</option>
+                  @for (option of fieldMeta.options ?? []; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+            } @else {
+              <label class="form-control w-full">
+                <span class="mb-1 text-sm font-medium">{{ fieldMeta.label ?? key }}</span>
+                <input
+                  class="input input-sm input-bordered w-full"
+                  [type]="fieldMeta.input === 'number' ? 'number' : 'text'"
+                  [value]="value ?? ''"
+                  (input)="handleFieldChange(key, value, $event)"
+                />
+              </label>
+            }
+          }
+        } @else if (friendlyEditors().length === 0) {
+          <p class="text-sm text-base-content/70">No editable attributes.</p>
+        }
+
+        <!-- Friendly editors: bottom placement -->
+        @if (friendlyEditorsPlacement() === 'bottom') {
+          @for (editor of friendlyEditors(); track editor.kind) {
+            @if (isChoiceEditor(editor)) {
+              <app-choice-attributes-editor
+                [activeNode]="node"
+                [presentation]="choiceInteractionPresentation()"
+                (patch)="handlePatch($event)"
+              />
+            }
+            @if (isTextEntryEditor(editor)) {
+              <app-text-entry-attributes-editor
+                [activeNode]="node"
+                (patch)="handlePatch($event)"
+              />
+            }
+          }
+        }
+
+        <!-- Read-only fields -->
+        @if (sortedReadOnlyEntries().length > 0) {
+          <details class="rounded-lg border border-base-300/50 bg-base-50 p-2">
+            <summary class="cursor-pointer text-sm font-medium">
+              Read-only attributes ({{ sortedReadOnlyEntries().length }})
+            </summary>
+            <div class="mt-3 flex flex-col gap-3 opacity-80">
+              @for (entry of sortedReadOnlyEntries(); track entry[0]) {
+                @let key = entry[0];
+                @let value = entry[1];
+                @let fieldMeta = getFieldMetadata(key, value);
+                @if (fieldMeta.input === 'checkbox') {
+                  <label class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium">{{ fieldMeta.label ?? key }}</span>
+                    <input class="checkbox checkbox-sm" type="checkbox" [checked]="!!value" disabled />
+                  </label>
+                } @else if (fieldMeta.input === 'select') {
+                  <label class="form-control w-full">
+                    <span class="mb-1 text-sm font-medium">{{ fieldMeta.label ?? key }}</span>
+                    <select class="select select-sm select-bordered w-full" [value]="value ?? ''" disabled>
+                      @for (option of fieldMeta.options ?? []; track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  </label>
+                } @else {
+                  <label class="form-control w-full">
+                    <span class="mb-1 text-sm font-medium">{{ fieldMeta.label ?? key }}</span>
+                    <input
+                      class="input input-sm input-bordered w-full"
+                      [type]="fieldMeta.input === 'number' ? 'number' : 'text'"
+                      [value]="value ?? ''"
+                      disabled
+                    />
+                  </label>
+                }
+              }
+            </div>
+          </details>
+        }
+
+      } @else {
+        <p class="text-sm text-base-content/70">Place the cursor inside an interaction to inspect its attributes.</p>
+      }
+    </div>
+
+  </div>
+</section>
