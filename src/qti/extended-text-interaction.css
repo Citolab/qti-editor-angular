@@ -1,0 +1,21 @@
+qti-extended-text-interaction {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+qti-extended-text-interaction p {
+  margin: 0;
+}
+
+qti-extended-text-interaction::after {
+  content: 'Extended text response';
+  display: block;
+  min-height: 6rem;
+  margin-top: 0.4rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 72%, white);
+  border-radius: 0.85rem;
+  background: white;
+  color: color-mix(in srgb, var(--base-font-color, #132723) 58%, #6f817b);
+  font-style: italic;
+}

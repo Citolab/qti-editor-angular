@@ -1,4 +1,5 @@
 import { listInteractionDescriptors } from '@qti-editor/core/interactions/composer';
+import { qtiMatchEnterCommand } from '@qti-editor/interaction-match';
 import { defineBasicExtension } from 'prosekit/basic';
 import { defineKeymap, defineNodeSpec, definePlugin, union, type Extension } from 'prosekit/core';
 
@@ -25,6 +26,10 @@ export function defineQtiInteractionsExtension(options?: { include?: string[] })
   const enterCommands = descriptors
     .map((descriptor) => descriptor.enterCommand)
     .filter((command): command is Command => command != null);
+
+  if (descriptors.some((descriptor) => descriptor.tagName === 'qti-match-interaction')) {
+    enterCommands.push(qtiMatchEnterCommand);
+  }
 
   if (enterCommands.length > 0) {
     keymap['Enter'] = (state, dispatch, view) =>

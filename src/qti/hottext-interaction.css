@@ -1,0 +1,14 @@
+qti-hottext-interaction {
+  display: block;
+  margin: 0.5rem 0;
+  line-height: 2.1;
+}
+
+qti-hottext-interaction qti-hottext {
+  display: inline-block;
+  margin: 0.1rem 0.15rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 74%, white);
+  border-radius: 999px;
+  background: white;
+}

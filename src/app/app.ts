@@ -9,7 +9,7 @@ import {
 
 import { EditorHostComponent } from './components/editor-host/editor-host';
 import { MenuBarComponent } from './components/menu-bar/menu-bar';
-import { ATTRIBUTE_PANEL_OVERRIDES } from './overrides/attribute-panel-overrides';
+import { ATTRIBUTE_PANEL_OVERRIDES } from './components/attributes-panel/attribute-panel-overrides';
 import { FileStorageService } from './services/file-storage.service';
 import type { SavedFileRecord } from './shared/file-record';
 import type { QtiContentChangeEventDetail } from '../lib/qti-prosekit-integration/events';

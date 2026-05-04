@@ -1,0 +1,23 @@
+qti-inline-choice-interaction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.1rem;
+  margin: 0.2rem 0.25rem 0.2rem 0;
+  padding: 0.35rem 2rem 0.35rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 74%, white);
+  border-radius: 0.7rem;
+  background: white;
+  color: var(--base-font-color, #132723);
+  position: relative;
+  vertical-align: middle;
+}
+
+qti-inline-choice-interaction::after {
+  content: '▾';
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: color-mix(in srgb, var(--base-font-color, #132723) 62%, white);
+  pointer-events: none;
+}

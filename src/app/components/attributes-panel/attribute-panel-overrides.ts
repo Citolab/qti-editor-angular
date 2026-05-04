@@ -1,4 +1,4 @@
-import type { AttributePanelOverrides } from '../components/attributes-panel/attributes-panel.component';
+import type { AttributePanelOverrides } from './attributes-panel.component';
 
 /**
  * App-level attribute panel overrides.

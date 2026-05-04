@@ -1,0 +1,20 @@
+qti-text-entry-interaction {
+  display: inline-flex;
+  align-items: center;
+  min-width: 8rem;
+  min-height: 2.2rem;
+  margin: 0.2rem 0.25rem 0.2rem 0;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 74%, white);
+  border-radius: 0.7rem;
+  background: white;
+  position: relative;
+  vertical-align: middle;
+}
+
+qti-text-entry-interaction::after {
+  content: 'Text entry';
+  color: color-mix(in srgb, var(--base-font-color, #132723) 56%, white);
+  font-style: italic;
+  white-space: nowrap;
+}

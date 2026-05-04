@@ -1,0 +1,67 @@
+qti-choice-interaction {
+  display: block;
+  margin: 0.5rem 0;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 72%, white);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 28%, white) 0%, white 100%);
+  box-shadow: 0 1px 2px rgb(19 39 35 / 0.04);
+}
+
+qti-choice-interaction qti-simple-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 65%, white);
+  border-radius: 0.8rem;
+  background: white;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+qti-choice-interaction qti-simple-choice:hover {
+  border-color: color-mix(in srgb, var(--primary-color, #1f7660) 48%, var(--qti-border-color, #c8d7d0));
+  background: color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 24%, white);
+  box-shadow: 0 6px 16px rgb(19 39 35 / 0.06);
+}
+
+qti-choice-interaction qti-simple-choice[aria-checked='true'],
+qti-choice-interaction.qti-input-control-hidden qti-simple-choice[aria-checked='true'] {
+  border-color: var(--primary-color, #1f7660);
+  background: color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 82%, white);
+  color: var(--qti-selected-color, inherit);
+}
+
+qti-choice-interaction qti-simple-choice > p {
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+
+qti-choice-interaction.qti-input-control-hidden qti-simple-choice {
+  padding-left: 1rem;
+}
+
+qti-choice-interaction.qti-choices-stacked qti-simple-choice,
+qti-choice-interaction[class*='stacked'] qti-simple-choice {
+  width: 100%;
+}
+
+qti-choice-interaction.qti-choices-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+qti-choice-interaction.qti-choices-inline > qti-simple-choice,
+qti-choice-interaction[class*='inline'] > qti-simple-choice {
+  margin-top: 0;
+}

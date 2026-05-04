@@ -1,0 +1,32 @@
+qti-match-interaction {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 72%, white);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #f9fbfa 0%, #fff 100%);
+}
+
+qti-match-interaction qti-simple-match-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: flex-start;
+}
+
+qti-match-interaction qti-simple-associable-choice {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 70%, white);
+  border-radius: 0.75rem;
+  background: white;
+  min-width: 8rem;
+}
+
+qti-match-interaction qti-simple-associable-choice p {
+  margin: 0;
+  display: inline;
+}

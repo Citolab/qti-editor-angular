@@ -2,6 +2,18 @@
 @import 'prosekit/basic/style.css';
 @import 'prosekit/basic/typography.css';
 @import 'prosekit/extensions/placeholder/style.css';
+@import './qti/qti-vars.css';
+@import './qti/choice-interaction.css';
+@import './qti/extended-text-interaction.css';
+@import './qti/feedback.css';
+@import './qti/gap-match-interaction.css';
+@import './qti/hottext-interaction.css';
+@import './qti/inline-choice-interaction.css';
+@import './qti/match-interaction.css';
+@import './qti/modal-feedback.css';
+@import './qti/rubric-block.css';
+@import './qti/select-point-interaction.css';
+@import './qti/text-entry-interaction.css';
 @import "tailwindcss";
 @variant dark (&:is(.dark *));
 
@@ -50,8 +62,6 @@ qti-prompt {
   background: #fff;
 }
 
-qti-choice-interaction,
-qti-inline-choice-interaction,
 qti-match-interaction,
 qti-order-interaction,
 qti-select-point-interaction,
@@ -62,17 +72,4 @@ qti-extended-text-interaction {
   padding: 0.75rem;
   border-radius: 0.75rem;
   background: #f1f5f4;
-}
-
-qti-simple-choice {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.65rem;
-  background: #fff;
-}
-
-qti-simple-choice > p {
-  margin: 0;
 }

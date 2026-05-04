@@ -1,0 +1,18 @@
+qti-feedback-inline,
+qti-feedback-block {
+  display: block;
+  padding: 0.65rem 0.85rem;
+  border-left: 3px solid var(--info-color, #2b83c6);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--info-color, #2b83c6) 10%, white);
+  color: color-mix(in srgb, var(--base-font-color, #132723) 82%, var(--info-color, #2b83c6));
+  font-weight: 600;
+}
+
+qti-feedback-inline {
+  margin: 0 0.75rem;
+}
+
+qti-feedback-block {
+  margin: 1rem 0;
+}

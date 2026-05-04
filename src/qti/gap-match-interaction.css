@@ -1,0 +1,35 @@
+qti-gap-match-interaction {
+  display: block;
+  margin: 0.5rem 0;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--qti-border-color, #c8d7d0) 72%, white);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #f9fbfa 0%, #fff 100%);
+}
+
+qti-gap-match-interaction qti-gap-text,
+qti-gap-match-interaction qti-gap {
+  box-sizing: border-box;
+}
+
+qti-gap-match-interaction qti-gap-text {
+  display: inline-flex;
+  align-items: center;
+  margin: 0.2rem 0.35rem 0.2rem 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--primary-color, #1f7660) 30%, var(--qti-border-color, #c8d7d0));
+  border-radius: 999px;
+  background: white;
+  box-shadow: 0 1px 2px rgb(19 39 35 / 0.05);
+}
+
+qti-gap-match-interaction qti-gap {
+  display: inline-flex;
+  min-width: 4.5rem;
+  min-height: 2.25rem;
+  margin: 0.2rem 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px dashed color-mix(in srgb, var(--qti-border-color, #9fb7ab) 78%, white);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 24%, white);
+}

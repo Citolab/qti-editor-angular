@@ -1,0 +1,20 @@
+qti-select-point-interaction {
+  display: block;
+  margin: 0.5rem 0;
+  min-height: 10rem;
+  border: 1px dashed color-mix(in srgb, var(--qti-border-color, #c8d7d0) 78%, white);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 34%, white), transparent 20rem),
+    linear-gradient(180deg, #f9fbfa 0%, #fff 100%);
+  position: relative;
+}
+
+qti-select-point-interaction::after {
+  content: 'Select point area';
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  color: color-mix(in srgb, var(--base-font-color, #132723) 52%, white);
+  font-size: 0.95rem;
+}
