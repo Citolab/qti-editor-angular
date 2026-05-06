@@ -328,7 +328,10 @@ export class QtiInteractionInsertMenu extends LitElement {
             <span>${this.i18n.t('interactionInsert.trigger')}</span>
           </button>
         </prosekit-popover-trigger>
-        <prosekit-popover-popup class="flex min-w-56 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 text-sm shadow-lg dark:border-gray-800 dark:bg-gray-950 [&:not([data-state])]:hidden">
+        <prosekit-popover-popup
+          class="flex min-w-56 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 text-sm shadow-lg dark:border-gray-800 dark:bg-gray-950 [&:not([data-state])]:hidden"
+          style="position: absolute; top: 100%; left: 0; z-index: 1000; margin-top: 0.5rem;"
+        >
           ${items.map(
             item => html`
               <button
