@@ -316,7 +316,11 @@ export class QtiInteractionInsertMenu extends LitElement {
     const canInsertAny = items.some(item => item.canInsert);
 
     return html`
-      <prosekit-popover-root .open=${this.open} @openChange=${this.handleOpenChange}>
+      <prosekit-popover-root
+        .open=${this.open}
+        @openChange=${this.handleOpenChange}
+        class="relative"
+      >
         <prosekit-popover-trigger>
           <button
             type="button"
@@ -329,8 +333,7 @@ export class QtiInteractionInsertMenu extends LitElement {
           </button>
         </prosekit-popover-trigger>
         <prosekit-popover-popup
-          class="flex min-w-56 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 text-sm shadow-lg dark:border-gray-800 dark:bg-gray-950 [&:not([data-state])]:hidden"
-          style="position: absolute; top: 100%; left: 0; z-index: 1000; margin-top: 0.5rem;"
+          class="absolute left-0 top-full z-50 mt-2 flex min-w-56 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 text-sm shadow-lg dark:border-gray-800 dark:bg-gray-950 [&:not([data-state])]:hidden"
         >
           ${items.map(
             item => html`
