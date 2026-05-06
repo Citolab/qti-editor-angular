@@ -19,6 +19,8 @@ import { insertHottextInteraction } from '@qti-editor/interaction-hottext';
 import { insertMatchInteraction } from '@qti-editor/interaction-match';
 import { insertOrderInteraction } from '@qti-editor/interaction-order';
 import { insertSelectPointInteraction } from '@qti-editor/interaction-select-point';
+import { insertGapMatchInteraction } from '../../../../vendor/interaction-gap-match/dist/index.js';
+import { insertItemDivider } from '../../../../vendor/qti-item-divider/dist/index.js';
 
 // Match inputs like "/", "/table", "/heading 1" etc. Do not match "/ heading".
 const regex = canUseRegexLookbehind() ? /(?<!\S)\/(\S.*)?$/u : /\/(\S.*)?$/u
@@ -52,6 +54,10 @@ class SlashMenuElement extends LitElement {
   static properties = {
     editor: {
       attribute: false
+    },
+    disabled: {
+      type: Boolean,
+      reflect: true,
     },
   };
 
@@ -166,7 +172,7 @@ class SlashMenuElement extends LitElement {
 
     return html`<prosekit-autocomplete-popover
       .editor=${editor}
-      .regex=${regex}
+      .regex=${this.disabled ? null : regex}
       class="relative block max-h-100 min-w-60 select-none overflow-auto whitespace-nowrap p-1 z-10 box-border rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg [&:not([data-state])]:hidden"
     >
       <prosekit-autocomplete-list .editor=${editor}>
@@ -211,6 +217,26 @@ class SlashMenuElement extends LitElement {
                 label="Extended text"
                 ?disabled=${!canInsert(view, schema.nodes.qtiExtendedTextInteraction)}
                 @select=${() => this.runViewCommand((currentView) => insertExtendedTextInteraction(currentView.state, currentView.dispatch, currentView))}
+              ></lit-editor-slash-menu-item>
+            `
+          : ''}
+        ${schema?.nodes.qtiGapMatchInteraction
+          ? html`
+              <lit-editor-slash-menu-item
+                class="contents"
+                label="Gap match interaction"
+                ?disabled=${!canInsert(view, schema.nodes.qtiGapMatchInteraction)}
+                @select=${() => this.runViewCommand((currentView) => insertGapMatchInteraction(currentView.state, currentView.dispatch, currentView))}
+              ></lit-editor-slash-menu-item>
+            `
+          : ''}
+        ${schema?.nodes.qtiItemDivider
+          ? html`
+              <lit-editor-slash-menu-item
+                class="contents"
+                label="Item divider"
+                ?disabled=${!canInsert(view, schema.nodes.qtiItemDivider)}
+                @select=${() => this.runViewCommand((currentView) => insertItemDivider(currentView.state, currentView.dispatch))}
               ></lit-editor-slash-menu-item>
             `
           : ''}

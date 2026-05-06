@@ -32,6 +32,7 @@ export class MenuBarComponent {
   readonly fileNameChange = output<string>();
   readonly newFile = output<void>();
   readonly saveFile = output<void>();
+  readonly importXml = output<void>();
   readonly exportXml = output<void>();
   readonly loadFile = output<string>();
   readonly deleteFile = output<string>();

@@ -40,7 +40,10 @@ import {
   qtiEditorEventsExtension,
   type QtiContentChangeEventDetail,
 } from '../../../lib/qti-prosekit-integration/events';
+import { openXmlFilePicker } from '../../../lib/qti-prosekit-integration/import-xml';
 import { defineQtiExtension } from '../../../lib/qti-prosekit-integration/interactions-prosekit';
+import { defineSlashMenuGuardExtension } from '../../../lib/qti-prosekit-integration/slash-menu-guard';
+import { translateQti } from '@qti-editor/interaction-shared';
 
 const STORAGE_KEY = 'qti-editor-angular:prosemirror-doc:v1';
 
@@ -176,6 +179,30 @@ export class EditorHostComponent implements OnDestroy {
     }
   }
 
+  public async importXml(): Promise<void> {
+    try {
+      const result = await openXmlFilePicker({ schema: this.editor.schema });
+      this.editor.setContent(result.json);
+
+      if (result.metadata && (result.metadata.identifier || result.metadata.title)) {
+        const detail = {
+          identifier: result.metadata.identifier || this.identifier(),
+          title: result.metadata.title || this.itemTitle(),
+        };
+
+        if (this.composerRef) {
+          this.composerRef.nativeElement.identifier = detail.identifier;
+          this.composerRef.nativeElement.title = detail.title;
+        }
+
+        this.metadataChange.emit(detail);
+      }
+    } catch (error) {
+      console.error('[QTI Editor] Failed to import XML:', error);
+      throw error;
+    }
+  }
+
   protected onMetadataChange(event: Event): void {
     const detail = (event as CustomEvent<{ title: string; identifier: string }>).detail;
     // Update composerRef immediately so the preview reflects the change before
@@ -191,11 +218,24 @@ export class EditorHostComponent implements OnDestroy {
     const extension = union(
       defineQtiExtension(),
       defineSemanticPasteExtension(),
+      defineSlashMenuGuardExtension(),
       defineLocalStorageDocPersistenceExtension({ storageKey: STORAGE_KEY }),
       blockSelectExtension,
       nodeAttrsSyncExtension,
       qtiEditorEventsExtension({ eventTarget: this.eventTarget }),
-      definePlaceholder({ placeholder: 'Typ / voor opdrachten', strategy: 'block' }),
+      definePlaceholder({
+        placeholder: (state) => {
+          const { $anchor } = state.selection;
+
+          for (let depth = $anchor.depth; depth > 0; depth -= 1) {
+            const placeholder = $anchor.node(depth).type.spec['placeholder'];
+            if (placeholder) return placeholder;
+          }
+
+          return translateQti('editor.placeholder', { target: document.body });
+        },
+        strategy: 'block',
+      }),
     );
 
     if (defaultContent) {

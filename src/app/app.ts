@@ -98,6 +98,16 @@ export class App {
     URL.revokeObjectURL(url);
   }
 
+  protected async onImportXml(): Promise<void> {
+    try {
+      await this.editorHost.importXml();
+      this.currentFileId.set(null);
+      this.fileName.set('imported-qti-item');
+    } catch {
+      this.errorMessage.set('Import failed: please choose a valid QTI XML file.');
+    }
+  }
+
   protected onLoadFile(fileId: string): void {
     const file = this.savedFiles().find((f) => f.id === fileId);
     if (!file) return;

@@ -2,11 +2,22 @@ import { listInteractionDescriptors } from '@qti-editor/core/interactions/compos
 import { qtiMatchEnterCommand } from '@qti-editor/interaction-match';
 import { defineBasicExtension } from 'prosekit/basic';
 import { defineKeymap, defineNodeSpec, definePlugin, union, type Extension } from 'prosekit/core';
+import { splitBlock } from 'prosekit/pm/commands';
+import { gapMatchInteractionDescriptor } from '../../vendor/interaction-gap-match/dist/index.js';
+import { qtiItemDividerDescriptor } from '../../vendor/qti-item-divider/dist/index.js';
 
 import type { Command } from 'prosekit/pm/state';
+import type { InteractionDescriptor } from '@qti-editor/interfaces';
 
 export function defineQtiInteractionsExtension(options?: { include?: string[] }): Extension {
-  const allDescriptors = listInteractionDescriptors();
+  const allDescriptors = Array.from(
+    new Map(
+      [...listInteractionDescriptors(), gapMatchInteractionDescriptor, qtiItemDividerDescriptor].map((descriptor) => [
+        descriptor.tagName,
+        descriptor,
+      ]),
+    ).values(),
+  ) as InteractionDescriptor[];
   const descriptors = options?.include
     ? allDescriptors.filter((d) => options.include!.includes(d.tagName))
     : allDescriptors;
@@ -32,8 +43,13 @@ export function defineQtiInteractionsExtension(options?: { include?: string[] })
   }
 
   if (enterCommands.length > 0) {
-    keymap['Enter'] = (state, dispatch, view) =>
-      enterCommands.some((command) => command(state, dispatch, view));
+    keymap['Enter'] = (state, dispatch, view) => {
+      for (const command of enterCommands) {
+        if (command(state, dispatch, view)) return true;
+      }
+
+      return splitBlock(state, dispatch, view);
+    };
   }
 
   for (const descriptor of descriptors) {
@@ -43,7 +59,7 @@ export function defineQtiInteractionsExtension(options?: { include?: string[] })
   }
 
   const pluginExtensions = descriptors
-    .flatMap((d) => d.pluginFactories ?? [])
+    .flatMap((descriptor) => descriptor.pluginFactories ?? [])
     .map((pluginFactory) => definePlugin(pluginFactory));
 
   return union(...nodeSpecExtensions, defineKeymap(keymap), ...pluginExtensions);
