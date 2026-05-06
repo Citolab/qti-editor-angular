@@ -3,8 +3,8 @@ import { qtiMatchEnterCommand } from '@qti-editor/interaction-match';
 import { defineBasicExtension } from 'prosekit/basic';
 import { defineKeymap, defineNodeSpec, definePlugin, union, type Extension } from 'prosekit/core';
 import { splitBlock } from 'prosekit/pm/commands';
-import { gapMatchInteractionDescriptor } from '../../vendor/interaction-gap-match/dist/index.js';
-import { qtiItemDividerDescriptor } from '../../vendor/qti-item-divider/dist/index.js';
+import { gapMatchInteractionDescriptor } from '@qti-editor/interaction-gap-match';
+import { qtiItemDividerDescriptor } from '@qti-editor/qti-item-divider';
 
 import type { Command } from 'prosekit/pm/state';
 import type { InteractionDescriptor } from '@qti-editor/interfaces';

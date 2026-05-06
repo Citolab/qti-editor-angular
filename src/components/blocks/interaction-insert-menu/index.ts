@@ -4,7 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { translateQti, QtiI18nController } from '@qti-editor/interaction-shared/i18n/index.js';
 import { defineUpdateHandler, type Editor } from 'prosekit/core';
 import { Selection } from 'prosekit/pm/state';
-import { PopoverContent, PopoverRoot, PopoverTrigger } from 'prosekit/lit/popover';
+import { PopoverPopup, PopoverRoot, PopoverTrigger } from 'prosekit/lit/popover';
 import { insertChoiceInteraction } from '@qti-editor/interaction-choice';
 import { insertExtendedTextInteraction } from '@qti-editor/interaction-extended-text';
 import { insertMatchInteraction } from '@qti-editor/interaction-match';
@@ -13,8 +13,8 @@ import { insertSelectPointInteraction } from '@qti-editor/interaction-select-poi
 import { insertInlineChoiceInteraction } from '@qti-editor/interaction-inline-choice';
 import { insertAssociateInteraction } from '@qti-editor/interaction-associate';
 import { insertHottextInteraction } from '@qti-editor/interaction-hottext';
-import { insertGap, insertGapMatchInteraction } from '../../../vendor/interaction-gap-match/dist/index.js';
-import { insertItemDivider } from '../../../vendor/qti-item-divider/dist/index.js';
+import { insertGap, insertGapMatchInteraction } from '@qti-editor/interaction-gap-match';
+import { insertItemDivider } from '@qti-editor/qti-item-divider';
 
 import type { EditorView } from 'prosekit/pm/view';
 
@@ -24,8 +24,8 @@ if (!customElements.get('prosekit-popover-root')) {
 if (!customElements.get('prosekit-popover-trigger')) {
   customElements.define('prosekit-popover-trigger', PopoverTrigger);
 }
-if (!customElements.get('prosekit-popover-content')) {
-  customElements.define('prosekit-popover-content', PopoverContent);
+if (!customElements.get('prosekit-popover-popup')) {
+  customElements.define('prosekit-popover-popup', PopoverPopup);
 }
 
 export interface InteractionInsertItem {
@@ -328,7 +328,7 @@ export class QtiInteractionInsertMenu extends LitElement {
             <span>${this.i18n.t('interactionInsert.trigger')}</span>
           </button>
         </prosekit-popover-trigger>
-        <prosekit-popover-content class="flex min-w-56 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 text-sm shadow-lg dark:border-gray-800 dark:bg-gray-950 [&:not([data-state])]:hidden">
+        <prosekit-popover-popup class="flex min-w-56 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 text-sm shadow-lg dark:border-gray-800 dark:bg-gray-950 [&:not([data-state])]:hidden">
           ${items.map(
             item => html`
               <button
@@ -342,7 +342,7 @@ export class QtiInteractionInsertMenu extends LitElement {
               </button>
             `,
           )}
-        </prosekit-popover-content>
+        </prosekit-popover-popup>
       </prosekit-popover-root>
     `;
   }

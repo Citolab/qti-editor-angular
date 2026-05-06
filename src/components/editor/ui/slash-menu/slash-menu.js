@@ -1,10 +1,10 @@
-import { AutocompleteEmpty, AutocompleteItem, AutocompleteList, AutocompletePopover } from 'prosekit/lit/autocomplete'
+import { AutocompleteEmpty, AutocompleteItem, AutocompletePopup, AutocompleteRoot } from 'prosekit/lit/autocomplete'
 
 // prosekit sets sideEffects:false, causing bare imports to be removed by esbuild in
 // production builds. Referencing the constructors forces inclusion of the element
 // registration code from @prosekit/web/autocomplete (which sets sideEffects:true).
-if (!customElements.get('prosekit-autocomplete-popover')) customElements.define('prosekit-autocomplete-popover', AutocompletePopover)
-if (!customElements.get('prosekit-autocomplete-list')) customElements.define('prosekit-autocomplete-list', AutocompleteList)
+if (!customElements.get('prosekit-autocomplete-root')) customElements.define('prosekit-autocomplete-root', AutocompleteRoot)
+if (!customElements.get('prosekit-autocomplete-popup')) customElements.define('prosekit-autocomplete-popup', AutocompletePopup)
 if (!customElements.get('prosekit-autocomplete-item')) customElements.define('prosekit-autocomplete-item', AutocompleteItem)
 if (!customElements.get('prosekit-autocomplete-empty')) customElements.define('prosekit-autocomplete-empty', AutocompleteEmpty)
 
@@ -19,8 +19,8 @@ import { insertHottextInteraction } from '@qti-editor/interaction-hottext';
 import { insertMatchInteraction } from '@qti-editor/interaction-match';
 import { insertOrderInteraction } from '@qti-editor/interaction-order';
 import { insertSelectPointInteraction } from '@qti-editor/interaction-select-point';
-import { insertGapMatchInteraction } from '../../../../vendor/interaction-gap-match/dist/index.js';
-import { insertItemDivider } from '../../../../vendor/qti-item-divider/dist/index.js';
+import { insertGapMatchInteraction } from '@qti-editor/interaction-gap-match';
+import { insertItemDivider } from '@qti-editor/qti-item-divider';
 
 // Match inputs like "/", "/table", "/heading 1" etc. Do not match "/ heading".
 const regex = canUseRegexLookbehind() ? /(?<!\S)\/(\S.*)?$/u : /\/(\S.*)?$/u
@@ -170,12 +170,12 @@ class SlashMenuElement extends LitElement {
     const view = this.getView()
     const schema = view?.state.schema
 
-    return html`<prosekit-autocomplete-popover
+    return html`<prosekit-autocomplete-root
       .editor=${editor}
       .regex=${this.disabled ? null : regex}
       class="relative block max-h-100 min-w-60 select-none overflow-auto whitespace-nowrap p-1 z-10 box-border rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg [&:not([data-state])]:hidden"
     >
-      <prosekit-autocomplete-list .editor=${editor}>
+      <prosekit-autocomplete-popup .editor=${editor}>
         <div class="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
           Interactions
         </div>
@@ -367,8 +367,8 @@ class SlashMenuElement extends LitElement {
         ></lit-editor-slash-menu-item>
 
         <lit-editor-slash-menu-empty class="contents"></lit-editor-slash-menu-empty>
-      </prosekit-autocomplete-list>
-    </prosekit-autocomplete-popover>`;
+      </prosekit-autocomplete-popup>
+    </prosekit-autocomplete-root>`;
   }
 }
 
