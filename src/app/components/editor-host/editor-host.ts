@@ -12,7 +12,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { buildAssessmentItemXml } from '@qti-editor/core/composer';
+import { buildAssessmentItemXml, type ComposerItemContext } from '@qti-editor/core/composer';
 import { createEditor, union, type Editor } from 'prosekit/core';
 import { ListDOMSerializer } from 'prosekit/extensions/list';
 import { definePlaceholder } from 'prosekit/extensions/placeholder';
@@ -52,6 +52,100 @@ const VOID_HTML_TAGS = [
   'source', 'area', 'col', 'embed', 'param', 'track', 'wbr',
 ];
 const VOID_TAG_PATTERN = new RegExp(`<(${VOID_HTML_TAGS.join('|')})(\\s[^<>]*?)?>`, 'gi');
+const QTI_NS = 'http://www.imsglobal.org/xsd/imsqtiasi_v3p0';
+
+/**
+ * Split an item body document at qti-item-divider elements.
+ * Returns an array of item body fragments, one for each item.
+ */
+function splitItemBodyAtDividers(itemBodyDoc: Document): Element[] {
+  const itemBodyRoot = 
+    itemBodyDoc.querySelector('qti-item-body') ??
+    (itemBodyDoc.documentElement?.tagName.toLowerCase() === 'qti-item-body'
+      ? itemBodyDoc.documentElement
+      : null);
+
+  if (!itemBodyRoot) return [];
+
+  // Find all dividers
+  const dividers = Array.from(itemBodyRoot.querySelectorAll('qti-item-divider'));
+  
+  // If no dividers, return the whole body as a single item
+  if (dividers.length === 0) {
+    return [itemBodyRoot];
+  }
+
+  const fragments: Element[] = [];
+  const children = Array.from(itemBodyRoot.childNodes);
+  let currentFragment: Node[] = [];
+
+  for (const child of children) {
+    // Check if this child is a divider
+    if (child.nodeType === Node.ELEMENT_NODE && 
+        (child as Element).tagName.toLowerCase() === 'qti-item-divider') {
+      // Save the current fragment if it has content
+      if (currentFragment.length > 0) {
+        const fragmentBody = itemBodyDoc.createElementNS(QTI_NS, 'qti-item-body');
+        currentFragment.forEach(node => fragmentBody.appendChild(node.cloneNode(true)));
+        fragments.push(fragmentBody);
+        currentFragment = [];
+      }
+      // Skip the divider itself - it doesn't go into any fragment
+    } else {
+      currentFragment.push(child);
+    }
+  }
+
+  // Add the last fragment if it has content
+  if (currentFragment.length > 0) {
+    const fragmentBody = itemBodyDoc.createElementNS(QTI_NS, 'qti-item-body');
+    currentFragment.forEach(node => fragmentBody.appendChild(node.cloneNode(true)));
+    fragments.push(fragmentBody);
+  }
+
+  return fragments;
+}
+
+/**
+ * Build multiple QTI assessment items from a single editor document.
+ * Splits the item body at qti-item-divider elements and generates
+ * a separate <qti-assessment-item> for each segment.
+ */
+function buildMultipleAssessmentItemsXml(itemContext?: ComposerItemContext): string {
+  if (!itemContext?.itemBody) return '';
+
+  const fragments = splitItemBodyAtDividers(itemContext.itemBody);
+  
+  // If only one fragment (no dividers), use the regular single-item builder
+  if (fragments.length <= 1) {
+    return buildAssessmentItemXml(itemContext);
+  }
+
+  // Build multiple items
+  const baseIdentifier = itemContext.identifier?.trim() || 'item';
+  const baseTitle = itemContext.title?.trim() || 'Untitled Item';
+  const lang = itemContext.lang?.trim() || 'en';
+
+  const itemXmls = fragments.map((fragmentBody, index) => {
+    const itemNumber = index + 1;
+    const fragmentDoc = document.implementation.createDocument(QTI_NS, 'qti-item-body', null);
+    const importedFragment = fragmentDoc.importNode(fragmentBody, true);
+    fragmentDoc.replaceChild(importedFragment, fragmentDoc.documentElement);
+
+    const fragmentContext: ComposerItemContext = {
+      identifier: `${baseIdentifier}-${itemNumber}`,
+      title: `${baseTitle} ${itemNumber}`,
+      lang,
+      itemBody: fragmentDoc,
+    };
+
+    return buildAssessmentItemXml(fragmentContext);
+  });
+
+  // Join multiple items with a comment separator for clarity
+  const separator = '\n\n<!-- Next Assessment Item -->\n\n';
+  return itemXmls.join(separator);
+}
 
 @Component({
   selector: 'app-editor-host',
@@ -168,7 +262,7 @@ export class EditorHostComponent implements OnDestroy {
         'application/xml',
       );
 
-      return buildAssessmentItemXml({
+      return buildMultipleAssessmentItemsXml({
         identifier: this.identifier().trim() || 'ANGULAR_QTI_ITEM',
         title: this.itemTitle().trim() || 'Angular QTI Item',
         itemBody,

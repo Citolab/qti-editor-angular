@@ -173,10 +173,14 @@ class SlashMenuElement extends LitElement {
     return html`<prosekit-autocomplete-root
       .editor=${editor}
       .regex=${this.disabled ? null : regex}
-      class="relative block max-h-100 min-w-60 select-none overflow-auto whitespace-nowrap p-1 z-10 box-border rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg [&:not([data-state])]:hidden"
     >
-      <prosekit-autocomplete-popup .editor=${editor}>
-        <div class="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
+      <prosekit-autocomplete-positioner class="block overflow-visible w-min h-min z-50 ease-out transition-transform duration-100 motion-reduce:transition-none">
+        <prosekit-autocomplete-popup
+          .editor=${editor}
+          class="box-border origin-[--transform-origin] transition-[opacity,scale] transition-discrete motion-reduce:transition-none data-[state=closed]:duration-150 data-[state=closed]:opacity-0 starting:opacity-0 data-[state=closed]:scale-95 starting:scale-95 duration-40 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg bg-[canvas] flex flex-col relative max-h-100 min-h-0 min-w-60 select-none overflow-hidden whitespace-nowrap"
+        >
+        <div class="flex flex-col flex-1 min-h-0 overflow-y-auto p-1 bg-[canvas] overscroll-contain">
+        <div class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 select-none">
           Interactions
         </div>
 
@@ -291,7 +295,7 @@ class SlashMenuElement extends LitElement {
             `
           : ''}
 
-        <div class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
+        <div class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 select-none">
           Blocks
         </div>
         
@@ -367,7 +371,9 @@ class SlashMenuElement extends LitElement {
         ></lit-editor-slash-menu-item>
 
         <lit-editor-slash-menu-empty class="contents"></lit-editor-slash-menu-empty>
-      </prosekit-autocomplete-popup>
+          </div>
+        </prosekit-autocomplete-popup>
+      </prosekit-autocomplete-positioner>
     </prosekit-autocomplete-root>`;
   }
 }
