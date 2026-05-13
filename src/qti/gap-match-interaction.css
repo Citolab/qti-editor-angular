@@ -17,7 +17,7 @@ qti-gap-match-interaction qti-gap-text {
   align-items: center;
   margin: 0.2rem 0.35rem 0.2rem 0;
   padding: 0.45rem 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--primary-color, #1f7660) 30%, var(--qti-border-color, #c8d7d0));
+  border: 1px solid color-mix(in srgb, var(--primary-color, #9b77a9) 30%, var(--qti-border-color, #c8d7d0));
   border-radius: 999px;
   background: white;
   box-shadow: 0 1px 2px rgb(19 39 35 / 0.05);

@@ -27,14 +27,14 @@ qti-choice-interaction qti-simple-choice {
 }
 
 qti-choice-interaction qti-simple-choice:hover {
-  border-color: color-mix(in srgb, var(--primary-color, #1f7660) 48%, var(--qti-border-color, #c8d7d0));
+  border-color: color-mix(in srgb, var(--primary-color, #9b77a9) 48%, var(--qti-border-color, #c8d7d0));
   background: color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 24%, white);
   box-shadow: 0 6px 16px rgb(19 39 35 / 0.06);
 }
 
-qti-choice-interaction qti-simple-choice[aria-checked='true'],
-qti-choice-interaction.qti-input-control-hidden qti-simple-choice[aria-checked='true'] {
-  border-color: var(--primary-color, #1f7660);
+qti-choice-interaction qti-simple-choice:state(--checked),
+qti-choice-interaction.qti-input-control-hidden qti-simple-choice:state(--checked) {
+  border-color: var(--primary-color, #9b77a9);
   background: color-mix(in srgb, var(--qti-selected-bg, #edf6f1) 82%, white);
   color: var(--qti-selected-color, inherit);
 }

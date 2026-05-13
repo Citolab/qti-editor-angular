@@ -32,8 +32,8 @@ test-container {
     /* Border properties */
     --qti-border-thickness: 1px;
     --qti-border-style: solid;
-    --qti-border-color: #9b77a9;
-    --qti-border-active: var(--primary-color);
+    --qti-border-color: #784c89;
+    --qti-border-active: var(--primary-color, #9b77a9);
     --qti-border-radius: 0.3rem;
     --qti-focus-border-width: 5px;
     --qti-drop-border-radius: calc(var(--qti-border-radius) + var(--qti-border-thickness));
@@ -52,6 +52,6 @@ test-container {
     --qti-dropzone-padding: 0.5rem;
 
     /* Selected zones */
-    --qti-selected-bg: var(--primary-color);
+    --qti-selected-bg: var(--primary-color, #9b77a9);
     --qti-selected-color: #fff;
 }
