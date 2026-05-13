@@ -236,10 +236,15 @@ ngOnDestroy(): void {
   public replaceEditor(defaultContent?: QtiContentChangeEventDetail['json']): void {
     this.editorRef.set(null);
     this.editor.view?.destroy();
-    if (!defaultContent) {
+    if (defaultContent) {
+      // Write the incoming content to localStorage immediately so that on
+      // refresh the editor always restores the correct file — the persistence
+      // extension only writes on doc *changes*, not on initial load.
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, doc: defaultContent }));
+    } else {
       window.localStorage.removeItem(STORAGE_KEY);
     }
-    this.createEditorInstance(defaultContent);
+    this.createEditorInstance();
     if (this._mountEl) {
       this.ngZone.runOutsideAngular(() => this.mountCurrentEditor(this._mountEl!));
     }

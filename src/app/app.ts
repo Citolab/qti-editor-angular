@@ -3,6 +3,7 @@ import {
   Component,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -13,6 +14,8 @@ import { ATTRIBUTE_PANEL_OVERRIDES } from './components/attributes-panel/attribu
 import { FileStorageService } from './services/file-storage.service';
 import type { SavedFileRecord } from './shared/file-record';
 import type { QtiContentChangeEventDetail } from '../lib/qti-prosekit-integration/events';
+
+const LAST_FILE_KEY = 'qti-editor-angular:last-file-id:v1';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +38,28 @@ export class App {
   private readonly fileStorage = inject(FileStorageService);
 
   protected readonly savedFiles = signal(this.fileStorage.readSavedFiles());
+
+  constructor() {
+    const lastId = localStorage.getItem(LAST_FILE_KEY);
+    if (lastId) {
+      const last = this.savedFiles().find((f) => f.id === lastId);
+      if (last) {
+        this.currentFileId.set(last.id);
+        this.fileName.set(last.name);
+        this.identifier.set(last.identifier);
+        this.itemTitle.set(last.title);
+      }
+    }
+
+    effect(() => {
+      const id = this.currentFileId();
+      if (id) {
+        localStorage.setItem(LAST_FILE_KEY, id);
+      } else {
+        localStorage.removeItem(LAST_FILE_KEY);
+      }
+    });
+  }
 
   private readonly safeFileName = computed(() =>
     this.fileName().trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '') ||
