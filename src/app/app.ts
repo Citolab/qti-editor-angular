@@ -103,9 +103,27 @@ export class App {
       await this.editorHost.importXml();
       this.currentFileId.set(null);
       this.fileName.set('imported-qti-item');
+      this.onSaveFile();
     } catch {
-      this.errorMessage.set('Import failed: please choose a valid QTI XML file.');
+      this.errorMessage.set('Import failed: please choose a valid QTI XML or ZIP package file.');
     }
+  }
+
+  protected async onExportPackage(): Promise<void> {
+    let blob: Blob;
+    try {
+      blob = await this.editorHost.exportPackage();
+    } catch {
+      this.errorMessage.set('Export failed: could not generate QTI package.');
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${this.safeFileName()}.zip`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   protected onLoadFile(fileId: string): void {
@@ -131,6 +149,11 @@ export class App {
     if (this.currentFileId() === fileId) {
       this.onNewFile();
     }
+  }
+
+  protected onFileNameChange(name: string): void {
+    this.fileName.set(name);
+    this.onSaveFile();
   }
 
   protected onContentChange(detail: QtiContentChangeEventDetail): void {

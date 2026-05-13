@@ -27,7 +27,6 @@ import {
 import '../../../components/editor/ui/button/index.js';
 import '../../../components/editor/ui/image-upload-popover/index.js';
 import '../../../components/editor/ui/slash-menu/index.js';
-import '../../../components/editor/ui/table-handle/index.js';
 import '../../../components/editor/ui/toolbar/index.js';
 import { sampleUploader } from '../../../components/editor/sample/sample-uploader';
 import '../../../components/blocks/composer/index';
@@ -41,6 +40,8 @@ import {
   type QtiContentChangeEventDetail,
 } from '../../../lib/qti-prosekit-integration/events';
 import { openXmlFilePicker } from '../../../lib/qti-prosekit-integration/import-xml';
+import { createQtiPackageFromNode } from '../../../lib/qti-prosekit-integration/roundtrip-export';
+import { qtiAttributesExtension } from '@qti-editor/prosemirror-attributes';
 import { defineQtiExtension } from '../../../lib/qti-prosekit-integration/interactions-prosekit';
 import { defineSlashMenuGuardExtension } from '../../../lib/qti-prosekit-integration/slash-menu-guard';
 import { translateQti } from '@qti-editor/interaction-shared';
@@ -187,10 +188,7 @@ export class EditorHostComponent implements OnDestroy {
   @ViewChild('slashMenu', { static: true })
   private readonly slashMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
 
-  @ViewChild('tableHandle', { static: true })
-  private readonly tableHandleRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
-
-  @ViewChild('insertMenu', { static: true })
+@ViewChild('insertMenu', { static: true })
   private readonly insertMenuRef?: ElementRef<HTMLElement & { editor: Editor | null }>;
 
   @ViewChild('convertMenu', { static: true })
@@ -208,6 +206,7 @@ export class EditorHostComponent implements OnDestroy {
 
   private readonly ngZone = inject(NgZone);
   private readonly eventTarget = new EventTarget();
+  readonly attributesEventTarget = new EventTarget();
   private editor!: Editor;
   private readonly unsubscribeContent: () => void;
 
@@ -229,7 +228,7 @@ export class EditorHostComponent implements OnDestroy {
 
   }
 
-  ngOnDestroy(): void {
+ngOnDestroy(): void {
     this.unsubscribeContent();
     this.editor.view?.destroy();
   }
@@ -273,6 +272,16 @@ export class EditorHostComponent implements OnDestroy {
     }
   }
 
+  public async exportPackage(): Promise<Blob> {
+    const node = this.editor?.state?.doc;
+    if (!node) throw new Error('Editor not ready.');
+
+    return createQtiPackageFromNode(node, {
+      identifier: this.identifier().trim() || 'ANGULAR_QTI_ITEM',
+      title: this.itemTitle().trim() || 'Angular QTI Item',
+    });
+  }
+
   public async importXml(): Promise<void> {
     try {
       const result = await openXmlFilePicker({ schema: this.editor.schema });
@@ -313,6 +322,7 @@ export class EditorHostComponent implements OnDestroy {
       defineQtiExtension(),
       defineSemanticPasteExtension(),
       defineSlashMenuGuardExtension(),
+      qtiAttributesExtension({ eventTarget: this.attributesEventTarget }),
       defineLocalStorageDocPersistenceExtension({ storageKey: STORAGE_KEY }),
       blockSelectExtension,
       nodeAttrsSyncExtension,
@@ -320,12 +330,10 @@ export class EditorHostComponent implements OnDestroy {
       definePlaceholder({
         placeholder: (state) => {
           const { $anchor } = state.selection;
-
           for (let depth = $anchor.depth; depth > 0; depth -= 1) {
             const placeholder = $anchor.node(depth).type.spec['placeholder'];
             if (placeholder) return placeholder;
           }
-
           return translateQti('editor.placeholder', { target: document.body });
         },
         strategy: 'block',
@@ -354,7 +362,6 @@ export class EditorHostComponent implements OnDestroy {
   private mountCurrentEditor(el: HTMLElement): void {
     el.innerHTML = '';
     this.editor.mount(el);
-
     queueMicrotask(() => {
       if (this.toolbarRef) {
         this.toolbarRef.nativeElement.editor = this.editor;
@@ -363,22 +370,19 @@ export class EditorHostComponent implements OnDestroy {
       if (this.slashMenuRef) {
         this.slashMenuRef.nativeElement.editor = this.editor;
       }
-      if (this.tableHandleRef) {
-        this.tableHandleRef.nativeElement.editor = this.editor;
-      }
-      if (this.insertMenuRef) {
+if (this.insertMenuRef) {
         this.insertMenuRef.nativeElement.editor = this.editor;
       }
       if (this.convertMenuRef) {
         this.convertMenuRef.nativeElement.editor = this.editor;
       }
-      this.editorRef.set(this.editor);
       if (this.composerRef) {
         this.composerRef.nativeElement.editor = this.editor;
         this.composerRef.nativeElement.identifier = this.identifier();
         this.composerRef.nativeElement.title = this.itemTitle();
         this.composerRef.nativeElement.lang = 'en';
       }
+      this.editorRef.set(this.editor);
     });
   }
 

@@ -1,6 +1,7 @@
 import { jsonFromHTML } from 'prosekit/core';
 
 import type { Schema } from 'prosekit/pm/model';
+import { importQtiPackageFromBlob, type QtiPackageImportResult } from './roundtrip-import';
 
 export interface ImportXmlResult {
   json: ReturnType<typeof jsonFromHTML>;
@@ -12,6 +13,25 @@ export interface ImportXmlResult {
 
 export interface ImportXmlOptions {
   schema: Schema;
+}
+
+function isQtiPackageFile(file: File): boolean {
+  return (
+    file.name.toLowerCase().endsWith('.zip') ||
+    file.type === 'application/zip' ||
+    file.type === 'application/x-zip-compressed'
+  );
+}
+
+function packageResultToImportResult(result: QtiPackageImportResult): ImportXmlResult {
+  const firstItem = result.metadata.items[0];
+  return {
+    json: result.json,
+    metadata: {
+      identifier: result.metadata.identifier ?? firstItem?.identifier,
+      title: result.metadata.title ?? firstItem?.title,
+    },
+  };
 }
 
 function cleanXmlText(xmlText: string): string {
@@ -42,7 +62,7 @@ function cleanEmptyNamespaces(html: string): string {
     .replace(/\s+xsi:schemaLocation="[^"]*"/g, '');
 }
 
-function xmlToHtml(xml: string): string {
+export function xmlToHtml(xml: string): string {
   let xmlToParse = xml.trim();
   const assessmentItemMatches = xml.match(/<qti-assessment-item[\s>]/g);
   const hasMultipleItems = assessmentItemMatches != null && assessmentItemMatches.length > 1;
@@ -109,6 +129,10 @@ export async function importXmlFromFile(
   file: File,
   options: ImportXmlOptions,
 ): Promise<ImportXmlResult> {
+  if (isQtiPackageFile(file)) {
+    const result = await importQtiPackageFromBlob(file, options);
+    return packageResultToImportResult(result);
+  }
   return importXmlFromText(await file.text(), options);
 }
 
@@ -116,7 +140,7 @@ export function openXmlFilePicker(options: ImportXmlOptions): Promise<ImportXmlR
   return new Promise((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.xml,application/xml,text/xml';
+    input.accept = '.xml,.zip,application/xml,text/xml,application/zip,application/x-zip-compressed';
 
     input.onchange = async (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
@@ -128,7 +152,7 @@ export function openXmlFilePicker(options: ImportXmlOptions): Promise<ImportXmlR
       try {
         resolve(await importXmlFromFile(file, options));
       } catch (error) {
-        console.error('[QTI Editor] Failed to import XML:', error);
+        console.error('[QTI Editor] Failed to import:', error);
         reject(error);
       }
     };

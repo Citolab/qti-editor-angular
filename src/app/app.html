@@ -4,11 +4,12 @@
     [fileName]="fileName()"
     [savedFiles]="savedFiles()"
     [currentFileId]="currentFileId()"
-    (fileNameChange)="fileName.set($event)"
+    (fileNameChange)="onFileNameChange($event)"
     (newFile)="onNewFile()"
     (saveFile)="onSaveFile()"
     (importXml)="onImportXml()"
     (exportXml)="onExportXml()"
+    (exportPackage)="onExportPackage()"
     (loadFile)="onLoadFile($event)"
     (deleteFile)="onDeleteFile($event)"
   ></app-menu-bar>

@@ -5,15 +5,15 @@ import {
   HostListener,
   NgZone,
   OnDestroy,
+  OnInit,
   computed,
   effect,
   inject,
   input,
   signal,
 } from '@angular/core';
-import { defineMountHandler, union, type Editor } from 'prosekit/core';
+import { type Editor } from 'prosekit/core';
 import {
-  qtiAttributesExtension,
   updateNodeAttrs,
   type AttributesEventDetail,
   type AttributesNodeDetail,
@@ -54,10 +54,11 @@ export type AttributePanelOverrides = Record<string, AttributePanelNodeOverride>
   templateUrl: './attributes-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AttributesPanelComponent implements OnDestroy {
+export class AttributesPanelComponent implements OnInit, OnDestroy {
   readonly editor = input<Editor | null>(null);
   readonly panelOverrides = input<AttributePanelOverrides | null>(null);
   readonly choiceInteractionPresentation = input<ChoiceInteractionPanelPresentation | null>(null);
+  readonly attributesEventTarget = input<EventTarget | null>(null);
 
   protected readonly nodes = signal<AttributesNodeDetail[]>([]);
   protected readonly selectedIndex = signal(0);
@@ -102,9 +103,8 @@ export class AttributesPanelComponent implements OnDestroy {
     () => this.activeNodeOverride()?.friendlyEditorsPlacement ?? 'top',
   );
 
-  private readonly internalEventTarget = new EventTarget();
-  private unregisterExtension: VoidFunction | null = null;
   private editorView: EditorView | null = null;
+  private currentEventTarget: EventTarget | null = null;
 
   private readonly ngZone = inject(NgZone);
   private readonly elementRef = inject(ElementRef);
@@ -112,21 +112,24 @@ export class AttributesPanelComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const editor = this.editor();
-      this.ngZone.runOutsideAngular(() => {
-        this.teardownExtension();
-        if (editor) this.setupExtension(editor);
-      });
+      this.editorView = (editor as any)?.view ?? null;
     });
 
-    this.ngZone.runOutsideAngular(() => {
-      this.internalEventTarget.addEventListener('qti:attributes:update', this.onUpdateEvent);
+    effect(() => {
+      const target = this.attributesEventTarget();
+      this.ngZone.runOutsideAngular(() => {
+        this.currentEventTarget?.removeEventListener('qti:attributes:update', this.onUpdateEvent);
+        this.currentEventTarget = target;
+        target?.addEventListener('qti:attributes:update', this.onUpdateEvent);
+      });
     });
   }
 
+  ngOnInit(): void {}
+
   ngOnDestroy(): void {
-    this.teardownExtension();
     this.ngZone.runOutsideAngular(() => {
-      this.internalEventTarget.removeEventListener('qti:attributes:update', this.onUpdateEvent);
+      this.currentEventTarget?.removeEventListener('qti:attributes:update', this.onUpdateEvent);
     });
   }
 
@@ -234,25 +237,6 @@ export class AttributesPanelComponent implements OnDestroy {
       }
     }
   };
-
-  private setupExtension(editor: Editor): void {
-    const ext = union(
-      qtiAttributesExtension({ eventTarget: this.internalEventTarget }),
-      defineMountHandler(() => {
-        this.editorView = (editor as any).view ?? null;
-      }),
-    );
-    this.unregisterExtension = editor.use(ext);
-    if ((editor as any).mounted) {
-      this.editorView = (editor as any).view ?? null;
-    }
-  }
-
-  private teardownExtension(): void {
-    this.unregisterExtension?.();
-    this.unregisterExtension = null;
-    this.editorView = null;
-  }
 
   private updateActiveNodeAttrs(attrs: Record<string, AttrValue>): void {
     const node = this.activeNode();

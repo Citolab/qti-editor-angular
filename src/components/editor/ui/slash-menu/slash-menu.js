@@ -9,8 +9,7 @@ if (!customElements.get('prosekit-autocomplete-item')) customElements.define('pr
 if (!customElements.get('prosekit-autocomplete-empty')) customElements.define('prosekit-autocomplete-empty', AutocompleteEmpty)
 
 import { html, LitElement } from 'lit';
-import { canUseRegexLookbehind, defineUpdateHandler } from 'prosekit/core'
-import { Selection } from 'prosekit/pm/state'
+import { canUseRegexLookbehind } from 'prosekit/core'
 import { insertChoiceInteraction } from '@qti-editor/interaction-choice';
 import { insertExtendedTextInteraction } from '@qti-editor/interaction-extended-text';
 import { insertInlineChoiceInteraction } from '@qti-editor/interaction-inline-choice';
@@ -61,28 +60,8 @@ class SlashMenuElement extends LitElement {
     },
   };
 
-  removeUpdateExtension;
-  lastSelectionJson = null;
-
   createRenderRoot() {
     return this
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    this.attachEditorListener()
-  }
-
-  disconnectedCallback() {
-    this.detachEditorListener()
-    super.disconnectedCallback()
-  }
-
-  updated(changedProperties) {
-    super.updated(changedProperties)
-    if (changedProperties.has('editor')) {
-      this.attachEditorListener()
-    }
   }
 
   getView() {
@@ -93,43 +72,9 @@ class SlashMenuElement extends LitElement {
     return this.editor ?? null
   }
 
-  attachEditorListener() {
-    this.detachEditorListener()
-    if (!this.editor) return
-    this.removeUpdateExtension = this.editor.use(defineUpdateHandler(() => {
-      this.snapshotSelection()
-      this.requestUpdate()
-    }))
-    this.snapshotSelection()
-  }
-
-  detachEditorListener() {
-    this.removeUpdateExtension?.()
-    this.removeUpdateExtension = undefined
-  }
-
-  snapshotSelection() {
-    const view = this.getView()
-    if (!view) return
-    this.lastSelectionJson = view.state.selection.toJSON()
-  }
-
-  restoreSelection() {
-    const view = this.getView()
-    if (!view || !this.lastSelectionJson) return
-
-    try {
-      const restored = Selection.fromJSON(view.state.doc, this.lastSelectionJson)
-      view.dispatch(view.state.tr.setSelection(restored))
-    } catch {
-      return
-    }
-  }
-
   runViewCommand = (command) => {
     const view = this.getView()
     if (!view) return
-    this.restoreSelection()
     command(view)
     view.focus()
   };
@@ -138,7 +83,6 @@ class SlashMenuElement extends LitElement {
     const editor = this.getEditor()
     const view = this.getView()
     if (!editor || !view) return
-    this.restoreSelection()
     command(editor)
     view.focus()
   };
@@ -146,8 +90,6 @@ class SlashMenuElement extends LitElement {
   insertTextEntry = () => {
     const view = this.getView()
     if (!view) return
-
-    this.restoreSelection()
 
     const nodeType = view.state.schema.nodes.qtiTextEntryInteraction
     if (!nodeType) return
@@ -174,7 +116,7 @@ class SlashMenuElement extends LitElement {
       .editor=${editor}
       .regex=${this.disabled ? null : regex}
     >
-      <prosekit-autocomplete-positioner class="block overflow-visible w-min h-min z-50 ease-out transition-transform duration-100 motion-reduce:transition-none">
+      <prosekit-autocomplete-positioner strategy="fixed" class="block overflow-visible w-min h-min z-50 ease-out transition-transform duration-100 motion-reduce:transition-none">
         <prosekit-autocomplete-popup
           .editor=${editor}
           class="box-border origin-[--transform-origin] transition-[opacity,scale] transition-discrete motion-reduce:transition-none data-[state=closed]:duration-150 data-[state=closed]:opacity-0 starting:opacity-0 data-[state=closed]:scale-95 starting:scale-95 duration-40 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg bg-[canvas] flex flex-col relative max-h-100 min-h-0 min-w-60 select-none overflow-hidden whitespace-nowrap"
