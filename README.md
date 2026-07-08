@@ -8,3 +8,7 @@ This mirrors the structure of [qti-editor-item](https://github.com/Citolab/qti-e
 ### Note
 
 This repository is not actively maintained, nor officially supported. It is merely intended as inspiration.
+
+### Live version
+
+Deployed for your convenience: https://citolab.github.io/qti-editor-angular/

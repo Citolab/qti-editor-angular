@@ -112,7 +112,7 @@ export const qtiPlugins: Plugin[] = [
   ...descriptors.flatMap(descriptor => descriptor.pluginFactories?.map(factory => factory()) ?? [])
 ];
 
-const TEST_BASE = '/qti/kennisnet';
+const TEST_BASE = 'qti/kennisnet';
 
 /** Load the Kennisnet sample item refs from `AssessmentTest.xml`. */
 export async function loadQtiItems(): Promise<{ href: string; identifier: string; category: string }[]> {
