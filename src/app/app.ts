@@ -1,218 +1,286 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
   ViewChild,
-  computed,
-  effect,
+  ViewEncapsulation,
   inject,
   signal,
 } from '@angular/core';
 
-import { EditorHostComponent } from './components/editor-host/editor-host';
-import { MenuBarComponent } from './components/menu-bar/menu-bar';
-import { ATTRIBUTE_PANEL_OVERRIDES } from './components/attributes-panel/attribute-panel-overrides';
-import { FileStorageService } from './services/file-storage.service';
-import type { SavedFileRecord } from './shared/file-record';
-import type { QtiContentChangeEventDetail } from '../lib/qti-prosekit-integration/events';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { keymap } from 'prosemirror-keymap';
+import { baseKeymap, toggleMark, chainCommands } from 'prosemirror-commands';
+import { history, undo, redo } from 'prosemirror-history';
+import { dropCursor } from 'prosemirror-dropcursor';
+import { gapCursor } from 'prosemirror-gapcursor';
+import {
+  menuBar,
+  MenuItem,
+  Dropdown,
+  liftItem,
+  selectParentNodeItem,
+  undoItem,
+  redoItem,
+  icons,
+  type IconSpec,
+  type MenuElement,
+} from 'prosemirror-menu';
+import { splitListItem, liftListItem, sinkListItem, wrapInList } from 'prosemirror-schema-list';
+import {
+  tableEditing,
+  columnResizing,
+  goToNextCell,
+  addRowAfter,
+  addColumnAfter,
+  deleteRow,
+  deleteColumn,
+  deleteTable,
+} from 'prosemirror-tables';
+import { imagePlugin, startImageUpload } from 'prosemirror-image-plugin';
+import { blockSelectPlugin, nodeAttrsSyncPlugin } from '@citolab/prose-extensions/prosemirror';
 
-const LAST_FILE_KEY = 'qti-editor-angular:last-file-id:v1';
+import { attributesPanelPlugin } from './editor/components/attributes-panel-plugin';
+import {
+  descriptors,
+  editableAttrs,
+  qtiPlugins,
+  loadQtiItems,
+  importQtiItem,
+  exportQtiItem,
+} from './editor/prosemirror-qti';
+import { appSchema as schema, imagePluginSettings } from './editor/schema';
+import { divLockPlugin } from './editor/components/qti-layout-div';
+import { textEntryWidgetPlugin } from './editor/components/text-entry-widget';
+
+import 'prosemirror-view/style/prosemirror.css';
+import 'prosemirror-gapcursor/style/gapcursor.css';
+import 'prosemirror-menu/style/menu.css';
+import 'prosemirror-tables/style/tables.css';
+import 'prosemirror-image-plugin/dist/styles/common.css';
+import 'prosemirror-image-plugin/dist/styles/withoutResize.css';
+
+import type { MarkType, Node as ProseMirrorNode } from 'prosemirror-model';
+import type { Command } from 'prosemirror-state';
+import type { Plugin } from 'prosemirror-state';
+
+/** Standard ProseMirror list & table editing plugins (not QTI-specific). */
+const tableListPlugins: Plugin[] = [
+  keymap({
+    Enter: splitListItem(schema.nodes['list_item']),
+    Tab: chainCommands(sinkListItem(schema.nodes['list_item']), goToNextCell(1)),
+    'Shift-Tab': chainCommands(liftListItem(schema.nodes['list_item']), goToNextCell(-1)),
+    'Mod-[': liftListItem(schema.nodes['list_item']),
+    'Mod-]': sinkListItem(schema.nodes['list_item']),
+  }),
+  columnResizing(),
+  tableEditing(),
+];
+
+/** A mark-toggle menu item that lights up when the mark is active. */
+function markItem(markType: MarkType, label: string, title: string): MenuItem {
+  return new MenuItem({
+    run: toggleMark(markType),
+    enable: (state) => !state.selection.empty,
+    active: (state) => {
+      const { from, $from, to, empty } = state.selection;
+      return empty
+        ? !!markType.isInSet(state.storedMarks ?? $from.marks())
+        : state.doc.rangeHasMark(from, to, markType);
+    },
+    label,
+    title,
+  });
+}
+
+/** A command-backed menu item (icon-only) that disables itself when the command can't run. */
+function cmdItem(command: Command, icon: IconSpec, title: string): MenuItem {
+  return new MenuItem({ run: command, enable: (state) => command(state), icon, title });
+}
+
+/** Dropdown of every registered interaction (descriptors that have an insert command). */
+const insertInteractionDropdown = new Dropdown(
+  descriptors.map((descriptor) => {
+    const command = descriptor.insertCommand!;
+    return new MenuItem({
+      run: command,
+      enable: (state) => command(state),
+      label: descriptor.tagName,
+      title: `Insert ${descriptor.tagName} interaction`,
+    });
+  }),
+  { label: 'Insert' },
+);
+
+const insertImage: Command = (_state, _dispatch, view) => {
+  if (!view) return true;
+
+  const picker = Object.assign(document.createElement('input'), {
+    type: 'file',
+    accept: 'image/*',
+  });
+
+  picker.addEventListener(
+    'change',
+    () => {
+      const file = picker.files?.[0];
+      if (!file) return;
+      startImageUpload(view, file, imagePluginSettings.defaultAlt, imagePluginSettings, schema);
+    },
+    { once: true },
+  );
+
+  picker.click();
+  return true;
+};
+
+/** Insert a 3×3 table (first row as header cells) at the selection. */
+const insertTable: Command = (state, dispatch) => {
+  const { table, table_row, table_cell, table_header } = schema.nodes;
+  const cells = (cell: typeof table_cell) => Array.from({ length: 3 }, () => cell.createAndFill()!);
+  const rows = [
+    table_row.create(null, cells(table_header)),
+    table_row.create(null, cells(table_cell)),
+    table_row.create(null, cells(table_cell)),
+  ];
+  if (dispatch) dispatch(state.tr.replaceSelectionWith(table.create(null, rows)).scrollIntoView());
+  return true;
+};
+
+/** A tiny menu bar: insert dropdown, marks, undo/redo, structural helpers, lists, and tables. */
+const menuContent: MenuElement[][] = [
+  [insertInteractionDropdown],
+  [markItem(schema.marks['strong'], 'B', 'Toggle bold'), markItem(schema.marks['em'], 'i', 'Toggle italic')],
+  [undoItem, redoItem],
+  [
+    cmdItem(wrapInList(schema.nodes['bullet_list']), icons.bulletList, 'Wrap in bullet list'),
+    cmdItem(wrapInList(schema.nodes['ordered_list']), icons.orderedList, 'Wrap in ordered list'),
+    cmdItem(insertImage, { text: '🖼' }, 'Insert image'),
+  ],
+  [
+    cmdItem(insertTable, { text: '▦' }, 'Insert table'),
+    cmdItem(addRowAfter, { text: '≡' }, 'Add row after'),
+    cmdItem(addColumnAfter, { text: '⦀' }, 'Add column after'),
+    cmdItem(deleteRow, { text: '➖≡' }, 'Delete row'),
+    cmdItem(deleteColumn, { text: '➖⦀' }, 'Delete column'),
+    cmdItem(deleteTable, { text: '✕' }, 'Delete table'),
+  ],
+  [liftItem, selectParentNodeItem],
+];
+
+/** The plugin stack shared by every editor instance (the attributes panel plugin is added per-mount). */
+const editorPlugins: Plugin[] = [
+  history(),
+  keymap({ 'Mod-z': undo, 'Mod-y': redo, 'Shift-Mod-z': redo }),
+  ...qtiPlugins,
+  textEntryWidgetPlugin(),
+  divLockPlugin,
+  imagePlugin(imagePluginSettings),
+  ...tableListPlugins,
+  keymap(baseKeymap),
+  dropCursor(),
+  gapCursor(),
+  menuBar({ content: menuContent }),
+  blockSelectPlugin,
+  nodeAttrsSyncPlugin,
+];
+
+interface QtiItemRef {
+  href: string;
+  identifier: string;
+  category: string;
+}
 
 @Component({
   selector: 'app-root',
-  imports: [MenuBarComponent, EditorHostComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrls: ['./app.css', './editor/qti.css'],
+  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {
+export class App implements OnDestroy {
   protected readonly appTitle = 'QTI Editor';
-  protected readonly attributePanelOverrides = ATTRIBUTE_PANEL_OVERRIDES;
+  protected readonly items = signal<QtiItemRef[]>([]);
+  protected readonly hasView = signal(false);
 
-  protected readonly fileName = signal('angular-qti-item');
-  protected readonly identifier = signal('ANGULAR_QTI_ITEM');
-  protected readonly itemTitle = signal('Angular QTI Item');
-  protected readonly currentFileId = signal<string | null>(null);
-  protected readonly errorMessage = signal<string | null>(null);
+  @ViewChild('editorHost', { static: true })
+  private readonly editorHostRef!: ElementRef<HTMLElement>;
 
-  private readonly content = signal<QtiContentChangeEventDetail | null>(null);
-  private readonly fileStorage = inject(FileStorageService);
+  @ViewChild('attributesPanel', { static: true })
+  private readonly attributesPanelRef!: ElementRef<HTMLElement>;
 
-  protected readonly savedFiles = signal(this.fileStorage.readSavedFiles());
+  private readonly ngZone = inject(NgZone);
+  private view: EditorView | null = null;
 
   constructor() {
-    const lastId = localStorage.getItem(LAST_FILE_KEY);
-    if (lastId) {
-      const last = this.savedFiles().find((f) => f.id === lastId);
-      if (last) {
-        this.currentFileId.set(last.id);
-        this.fileName.set(last.name);
-        this.identifier.set(last.identifier);
-        this.itemTitle.set(last.title);
-      }
-    }
-
-    effect(() => {
-      const id = this.currentFileId();
-      if (id) {
-        localStorage.setItem(LAST_FILE_KEY, id);
-      } else {
-        localStorage.removeItem(LAST_FILE_KEY);
-      }
-    });
+    void this.loadItems();
   }
 
-  private readonly safeFileName = computed(() =>
-    this.fileName().trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '') ||
-    'angular-qti-item',
-  );
-
-  @ViewChild(EditorHostComponent)
-  private readonly editorHost!: EditorHostComponent;
-
-  protected onNewFile(): void {
-    this.currentFileId.set(null);
-    this.fileName.set('angular-qti-item');
-    this.identifier.set('ANGULAR_QTI_ITEM');
-    this.itemTitle.set('Angular QTI Item');
-    this.content.set(null);
-    this.editorHost.replaceEditor();
+  ngOnDestroy(): void {
+    this.view?.destroy();
   }
 
-  protected onSaveFile(): void {
-    const content = this.content();
-    if (!content?.json) return;
-
-    const record: SavedFileRecord = {
-      id: this.currentFileId() ?? crypto.randomUUID(),
-      name: this.fileName().trim() || 'angular-qti-item',
-      identifier: this.identifier().trim() || 'ANGULAR_QTI_ITEM',
-      title: this.itemTitle().trim() || 'Angular QTI Item',
-      json: content.json,
-      updatedAt: Date.now(),
-    };
-
-    const newFiles = [record, ...this.savedFiles().filter((f) => f.id !== record.id)];
-
-    // Persist first — only update in-memory state if storage succeeds.
-    if (!this.tryPersist(newFiles, 'save')) return;
-
-    this.currentFileId.set(record.id);
-    this.savedFiles.set(newFiles);
+  protected async onItemChange(href: string): Promise<void> {
+    if (!href) return;
+    await this.ngZone.runOutsideAngular(() => this.openItem(href));
   }
 
   protected onExportXml(): void {
-    let xml: string;
-    try {
-      xml = this.editorHost.generateXml();
-    } catch {
-      this.errorMessage.set('Export failed: could not generate XML.');
-      return;
-    }
-
-    if (!xml) {
-      this.errorMessage.set('Export failed: the document is empty.');
-      return;
-    }
-
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${this.safeFileName()}.xml`;
+    if (!this.view) return;
+    const xml = exportQtiItem(this.view.state.doc, schema);
+    const url = URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
+    const link = Object.assign(document.createElement('a'), { href: url, download: 'item.xml' });
     link.click();
     URL.revokeObjectURL(url);
-  }
-
-  protected async onImportXml(): Promise<void> {
-    try {
-      await this.editorHost.importXml();
-      this.currentFileId.set(null);
-      this.fileName.set('imported-qti-item');
-      this.onSaveFile();
-    } catch {
-      this.errorMessage.set('Import failed: please choose a valid QTI XML or ZIP package file.');
-    }
-  }
-
-  protected async onExportPackage(): Promise<void> {
-    let blob: Blob;
-    try {
-      blob = await this.editorHost.exportPackage();
-    } catch {
-      this.errorMessage.set('Export failed: could not generate QTI package.');
-      return;
-    }
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${this.safeFileName()}.zip`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  protected onLoadFile(fileId: string): void {
-    const file = this.savedFiles().find((f) => f.id === fileId);
-    if (!file) return;
-
-    this.currentFileId.set(file.id);
-    this.fileName.set(file.name);
-    this.identifier.set(file.identifier);
-    this.itemTitle.set(file.title);
-    this.content.set(null);
-    this.editorHost.replaceEditor(file.json);
-  }
-
-  protected onDeleteFile(fileId: string): void {
-    const newFiles = this.savedFiles().filter((f) => f.id !== fileId);
-
-    // Persist first — only update in-memory state if storage succeeds.
-    if (!this.tryPersist(newFiles, 'delete')) return;
-
-    this.savedFiles.set(newFiles);
-
-    if (this.currentFileId() === fileId) {
-      this.onNewFile();
-    }
-  }
-
-  protected onFileNameChange(name: string): void {
-    this.fileName.set(name);
-    this.onSaveFile();
-  }
-
-  protected onContentChange(detail: QtiContentChangeEventDetail): void {
-    this.content.set(detail);
-  }
-
-  protected onMetadataChange(detail: { title: string; identifier: string }): void {
-    this.identifier.set(detail.identifier);
-    this.itemTitle.set(detail.title);
-  }
-
-  protected dismissError(): void {
-    this.errorMessage.set(null);
   }
 
   /**
-   * Attempts to write `files` to storage.
-   * Returns `true` on success; sets `errorMessage` and returns `false` on failure.
-   * The `action` label is used only in the non-quota error log.
+   * Encode the current item as base64 and open it in qti.citolab.nl's preview
+   * with `?sharedQti=...`. Uses TextEncoder→btoa so non-ASCII characters
+   * survive the round-trip.
    */
-  private tryPersist(files: SavedFileRecord[], action: string): boolean {
-    try {
-      this.fileStorage.persistFiles(files);
-      return true;
-    } catch (e) {
-      if (e instanceof DOMException) {
-        this.errorMessage.set(
-          'Could not save: browser storage is full. Delete some files and try again.',
-        );
-      } else {
-        console.error(`[QTI Editor] Failed to persist files (${action}):`, e);
-        this.errorMessage.set('Could not save: an unexpected storage error occurred.');
-      }
-      return false;
-    }
+  protected onOpenPreview(): void {
+    if (!this.view) return;
+    const xml = exportQtiItem(this.view.state.doc, schema);
+    const bytes = new TextEncoder().encode(xml);
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    const base64 = btoa(binary);
+    const url = `https://qti.citolab.nl/preview?sharedQti=${encodeURIComponent(base64)}`;
+    window.open(url, '_blank', 'noopener');
+  }
+
+  private async loadItems(): Promise<void> {
+    const items = await loadQtiItems();
+    this.items.set(items);
+  }
+
+  private async openItem(href: string): Promise<void> {
+    const panelEl = this.attributesPanelRef.nativeElement;
+    panelEl.innerHTML = '';
+
+    const doc = await importQtiItem(href, schema);
+
+    this.view?.destroy();
+    const hostEl = this.editorHostRef.nativeElement;
+    hostEl.innerHTML = '';
+    this.view = this.mountEditor(hostEl, doc, panelEl);
+    this.hasView.set(true);
+  }
+
+  private mountEditor(container: HTMLElement, doc: ProseMirrorNode, panelEl: HTMLElement): EditorView {
+    const view = new EditorView(container, {
+      state: EditorState.create({
+        doc,
+        plugins: [...editorPlugins, attributesPanelPlugin(panelEl, { editableAttrs })],
+      }),
+      dispatchTransaction(tr) {
+        view.updateState(view.state.apply(tr));
+      },
+    });
+    return view;
   }
 }

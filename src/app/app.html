@@ -1,31 +1,42 @@
-<main class="app-shell">
-  <app-menu-bar
-    [appTitle]="appTitle"
-    [fileName]="fileName()"
-    [savedFiles]="savedFiles()"
-    [currentFileId]="currentFileId()"
-    (fileNameChange)="onFileNameChange($event)"
-    (newFile)="onNewFile()"
-    (saveFile)="onSaveFile()"
-    (importXml)="onImportXml()"
-    (exportXml)="onExportXml()"
-    (exportPackage)="onExportPackage()"
-    (loadFile)="onLoadFile($event)"
-    (deleteFile)="onDeleteFile($event)"
-  ></app-menu-bar>
-
-  @if (errorMessage()) {
-    <div class="error-banner" role="alert">
-      <span>{{ errorMessage() }}</span>
-      <button type="button" class="error-dismiss" (click)="dismissError()" aria-label="Dismiss">×</button>
-    </div>
-  }
-
-  <app-editor-host
-    [identifier]="identifier()"
-    [itemTitle]="itemTitle()"
-    [attributePanelOverrides]="attributePanelOverrides"
-    (contentChange)="onContentChange($event)"
-    (metadataChange)="onMetadataChange($event)"
-  ></app-editor-host>
+<header>
+  <h1>
+    {{ appTitle }}
+    <a
+      id="preview-link"
+      href="https://qti.citolab.nl/preview"
+      target="_blank"
+      rel="noopener"
+      title="Open in qti.citolab.nl"
+      >↗</a
+    >
+  </h1>
+  <div style="display:inline-flex; gap:0.5rem;">
+    <button id="export-btn" type="button" [disabled]="!hasView()" (click)="onExportXml()">
+      Download item.xml
+    </button>
+    <button id="open-btn" type="button" [disabled]="!hasView()" (click)="onOpenPreview()">
+      Open in qti.citolab.nl
+    </button>
+  </div>
+</header>
+<main id="app">
+  <section id="editor-pane">
+    <div id="editor-host" #editorHost></div>
+  </section>
+  <aside id="attributes-pane" aria-label="Attributes">
+    <div id="attributes-panel" aria-label="Attributes" #attributesPanel></div>
+  </aside>
+  <aside id="item-pane" aria-label="QTI items">
+    <select
+      id="item-list"
+      size="16"
+      aria-label="QTI items"
+      #itemList
+      (change)="onItemChange(itemList.value)"
+    >
+      @for (item of items(); track item.href) {
+        <option [value]="item.href">{{ item.category || item.identifier }}</option>
+      }
+    </select>
+  </aside>
 </main>

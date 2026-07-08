@@ -1,11 +1,9 @@
 
-# QTI Editor Angular Extension
+# QTI Editor Angular
 
-This project is an example Angular integration of the [qti-editor](https://github.com/Citolab/qti-editor) ecosystem. It demonstrates how to integrate QTI Editor’s modular, ProseMirror-based authoring environment into an Angular application, using the recommended public packages and UI registry approach.
+A minimal Angular shell around a pure-ProseMirror QTI 3.0 roundtrip editor (`@citolab/prose-qti` + `@citolab/prose-extensions`). Loads sample QTI items from a list, edits them, and exports back to QTI 3.0 XML or opens a preview at qti.citolab.nl.
 
-**Live Demo:** [https://citolab.github.io/qti-editor-angular/](https://citolab.github.io/qti-editor-angular/)
-
-For more details, see the [QTI Editor documentation](https://qti-editor.citolab.nl/).
+This mirrors the structure of [qti-editor-item](https://github.com/Citolab/qti-editor)'s minimal ProseMirror example, wrapped in a single Angular component (`src/app/app.ts`) instead of vanilla TypeScript.
 
 ### Note
 
