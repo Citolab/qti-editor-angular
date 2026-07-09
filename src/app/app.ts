@@ -56,13 +56,6 @@ import { appSchema as schema, imagePluginSettings } from './editor/schema';
 import { divLockPlugin } from './editor/components/qti-layout-div';
 import { textEntryWidgetPlugin } from './editor/components/text-entry-widget';
 
-import 'prosemirror-view/style/prosemirror.css';
-import 'prosemirror-gapcursor/style/gapcursor.css';
-import 'prosemirror-menu/style/menu.css';
-import 'prosemirror-tables/style/tables.css';
-import 'prosemirror-image-plugin/dist/styles/common.css';
-import 'prosemirror-image-plugin/dist/styles/withoutResize.css';
-
 import type { MarkType, Node as ProseMirrorNode } from 'prosemirror-model';
 import type { Command } from 'prosemirror-state';
 import type { Plugin } from 'prosemirror-state';

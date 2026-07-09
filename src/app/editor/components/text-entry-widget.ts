@@ -28,8 +28,6 @@ import { Decoration, DecorationSet } from 'prosemirror-view';
 
 import type { EditorView } from 'prosemirror-view';
 
-import './text-entry-widget.css';
-
 const NODE_TYPE = 'qtiTextEntryInteraction';
 
 /** Build the floating textarea for the interaction currently at `getPos()`. */

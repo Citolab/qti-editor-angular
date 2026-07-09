@@ -1,6 +1,13 @@
 @import '@qti-components/theme/item.css';
 @import '@qti-components/theme/kennisnet-override.css';
 @import '@citolab/prose-qti/core-css.css';
+@import 'prosemirror-view/style/prosemirror.css';
+@import 'prosemirror-gapcursor/style/gapcursor.css';
+@import 'prosemirror-menu/style/menu.css';
+@import 'prosemirror-tables/style/tables.css';
+@import 'prosemirror-image-plugin/dist/styles/common.css';
+@import 'prosemirror-image-plugin/dist/styles/withoutResize.css';
+@import './app/editor/components/text-entry-widget.css';
 
 html,
 body {
