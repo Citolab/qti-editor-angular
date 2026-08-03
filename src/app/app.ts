@@ -42,6 +42,7 @@ import {
 } from 'prosemirror-tables';
 import { imagePlugin, startImageUpload } from 'prosemirror-image-plugin';
 import { blockSelectPlugin, nodeAttrsSyncPlugin } from '@citolab/prose-extensions/prosemirror';
+import { qtiLayoutDivLockPlugin } from '@citolab/prose-qti/schema';
 
 import { attributesPanelPlugin } from './editor/components/attributes-panel-plugin';
 import {
@@ -53,7 +54,6 @@ import {
   exportQtiItem,
 } from './editor/prosemirror-qti';
 import { appSchema as schema, imagePluginSettings } from './editor/schema';
-import { divLockPlugin } from './editor/components/qti-layout-div';
 import { textEntryWidgetPlugin } from './editor/components/text-entry-widget';
 
 import type { MarkType, Node as ProseMirrorNode } from 'prosemirror-model';
@@ -94,17 +94,32 @@ function cmdItem(command: Command, icon: IconSpec, title: string): MenuItem {
   return new MenuItem({ run: command, enable: (state) => command(state), icon, title });
 }
 
-/** Dropdown of every registered interaction (descriptors that have an insert command). */
+/**
+ * Dropdown of every registered interaction that can actually be inserted.
+ *
+ * The filter is load-bearing, not defensive. Not every descriptor has an `insertCommand`:
+ * `matchInteractionTabularDescriptor` deliberately has none, because it shares `tagName`
+ * 'qti-match-interaction' with the regular match — an author inserts a match and switches it to
+ * tabular, so a second entry would be both meaningless and indistinguishable in this menu, which
+ * labels items by tag name.
+ *
+ * Without the filter `enable` calls `undefined` on the first menu update. That throws inside
+ * `new EditorView(...)` while it is constructing plugin views, so the constructor never returns:
+ * the document renders (its DOM is built first), but `this.view` is never assigned and every
+ * plugin ordered after `menuBar` — the attributes panel among them — silently never mounts.
+ */
 const insertInteractionDropdown = new Dropdown(
-  descriptors.map((descriptor) => {
-    const command = descriptor.insertCommand!;
-    return new MenuItem({
-      run: command,
-      enable: (state) => command(state),
-      label: descriptor.tagName,
-      title: `Insert ${descriptor.tagName} interaction`,
-    });
-  }),
+  descriptors
+    .filter((descriptor) => descriptor.insertCommand)
+    .map((descriptor) => {
+      const command = descriptor.insertCommand!;
+      return new MenuItem({
+        run: command,
+        enable: (state) => command(state),
+        label: descriptor.tagName,
+        title: `Insert ${descriptor.tagName} interaction`,
+      });
+    }),
   { label: 'Insert' },
 );
 
@@ -170,7 +185,7 @@ const editorPlugins: Plugin[] = [
   keymap({ 'Mod-z': undo, 'Mod-y': redo, 'Shift-Mod-z': redo }),
   ...qtiPlugins,
   textEntryWidgetPlugin(),
-  divLockPlugin,
+  qtiLayoutDivLockPlugin,
   imagePlugin(imagePluginSettings),
   ...tableListPlugins,
   keymap(baseKeymap),
@@ -190,7 +205,11 @@ interface QtiItemRef {
 @Component({
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrls: ['./app.css', './editor/qti.css'],
+  // `./editor/qti.css` was here too. Its replacement is global on purpose: core-css.css styles
+  // qti-* custom elements, and Angular's component styles are scoped to this component's emulated
+  // encapsulation — which cannot reach into a custom element's shadow via ::part() the way a
+  // document stylesheet can. It is loaded from src/styles.css instead.
+  styleUrls: ['./app.css'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

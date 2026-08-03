@@ -1,0 +1,54 @@
+@layer qti-components.global {
+  :root,
+  :host {
+    --qti-primary: #581d70;
+    --qti-success: #2b830e;
+    --qti-warning: #ffa700;
+    --qti-error: #df0000;
+    --qti-info: #007ac3;
+
+    --qti-spacing: 0.5rem;
+    --qti-border-thickness: 1px;
+    --qti-border-radius: 0.3rem;
+    --qti-fg: #3e144e;
+  }
+}
+
+:root {
+  /* Ring on a picked drag source: Kennisnet purple instead of the generic blue. */
+  --qti-edit-selected-outline-color: var(--qti-primary);
+
+  /* The Kennisnet items are Dutch, so the authoring placeholder is too. This is why the
+     placeholder is a variable and not a literal in core-css.css — content strings need
+     translating, and a host cannot restate the ::before rule without also owning its selector. */
+  --qti-edit-prompt-placeholder: 'Vraagtekst komt hier';
+}
+
+@layer qti-components.interactions.brand {
+  :state(drag),
+  [data-drag-clone],
+  qti-gap::part(drag),
+  qti-associate-interaction::part(drag),
+  qti-simple-associable-choice::part(drag) {
+    --drag-background-color: var(--qti-primary);
+    --drag-color: var(--qti-primary-fg);
+    --drag-box-shadow: 0 3px color-mix(in srgb, var(--qti-primary) 50%, transparent);
+    --drag-border-color: transparent;
+  }
+
+  /*
+   * Order's chips are deliberately absent from the list above: they take the brand's primary fill
+   * like every other chip. A white/bordered treatment for order alone used to sit here and was
+   * removed rather than left commented out — the selector list is the statement of which chips the
+   * brand paints, and a commented exception reads as an open question forever.
+   */
+}
+
+@layer qti-components.interactions.states {
+  :state(placeholder) {
+    --drag-background-color: var(--qti-placeholder-bg);
+    --drag-border-color: transparent;
+    --drag-box-shadow: inset var(--qti-placeholder-shadow);
+  }
+}
+

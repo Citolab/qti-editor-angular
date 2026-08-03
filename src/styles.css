@@ -1,6 +1,30 @@
+/*
+ * Load order matches the editor's own (apps/e2e/stories/*.stories.ts and prosemirror-base.ts):
+ *
+ *   1. item.css            the upstream runtime theme — interaction internals
+ *   2. core-css.css        the editor's affordances, and the --qti-edit-* contract that brands them
+ *   3. kennisnet.css       brand the RUNTIME by setting qti-components tokens (layered)
+ *
+ * Two files this app used to load are gone, and both were the same mistake in different clothes:
+ * paint restated locally instead of variables set against a contract.
+ *
+ *   `@qti-components/theme/kennisnet-override.css` — a single-file vendor substrate: Bootstrap 5.3
+ *   from a CDN, Wikiwijs bridge variables so the --bs-* references resolved to Wikiwijs purples,
+ *   FontAwesome glyph URLs as custom properties, and the compiled Kennisnet overrides on top. 1196
+ *   lines. The theme package no longer exports it at all. Its job is now (3): eleven variable
+ *   declarations against the theme's own token names.
+ *
+ *   `./app/editor/qti.css` — an app-local copy of the editor affordances, restating selectors. Its
+ *   job is now (2) plus (4). core-css.css exists precisely because every editor app had copied that
+ *   file by hand and the copies had drifted; this one had too, and its hottext rule matched
+ *   `:state(--checked)`, a state no element has emitted since the rename. It painted nothing.
+ *
+ * kennisnet.css is kept byte-identical with the copies in qti-editor and qti-components, so that
+ * all three render an item the same way. Diff before editing it.
+ */
 @import '@qti-components/theme/item.css';
-@import '@qti-components/theme/kennisnet-override.css';
 @import '@citolab/prose-qti/core-css.css';
+@import './app/editor/kennisnet.css';
 @import 'prosemirror-view/style/prosemirror.css';
 @import 'prosemirror-gapcursor/style/gapcursor.css';
 @import 'prosemirror-menu/style/menu.css';
