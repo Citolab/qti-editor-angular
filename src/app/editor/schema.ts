@@ -1,114 +1,49 @@
 /**
- * The editor schema — one literal, top to bottom, readable.
+ * The editor schema — the package's, not a local restatement of it.
  *
- * Each interaction package exports its NodeSpec (`attrs` + `parseDOM` + `toDOM`)
- * via `*NodeSpec`. This module spreads each one and restates `content` and
- * `group` inline so the entire document topology is visible in this file.
+ * This file used to spell out the whole topology: every interaction's NodeSpec imported one by one,
+ * every `content` and `group` restated inline, 114 lines of it. The comment at the top said that
+ * was the point — "the entire document topology is visible in this file" — and that reasoning was
+ * sound while the package shipped only the pieces. It no longer does. `createQtiSchema()` composes
+ * exactly this: the QTI basics, lists, tables with `richtext` cell content, and every registered
+ * interaction, with `doc` carrying `identifier` and `title`.
  *
- * To change where a node is allowed: edit its `content` or `group` here. The
- * package's NodeSpec is the source of truth for DOM serialization; this file is
- * the source of truth for topology.
+ * What that readability actually cost, since it was not free:
+ *
+ *   - `qtiMatchInteractionTabular` was missing. The package registers it; this file never listed
+ *     it, so a tabular match in a source item had no node to parse into.
+ *   - `qtiLayoutDiv` was a local copy of a spec the package now owns. Two copies of a parse rule
+ *     is one copy too many, and the divergence would have been silent — a `<div class="qti-layout-row">`
+ *     dropped on import, not an error.
+ *   - the image node was `prosemirror-schema-basic`'s, which models `src`/`alt`/`title` and drops
+ *     `width` and `height`. The package's carries them.
+ *
+ * Reading the topology is still possible, and now has one answer rather than two that can disagree:
+ * `createQtiSchema` in @citolab/prose-qti/schema.
+ *
+ * ## The one thing still composed here
+ *
+ * `prosemirror-image-plugin` rewrites the `image` node spec to add its own node view and upload
+ * placeholder handling. That is an editing-experience concern belonging to this app, not to the
+ * document format, so it is applied as a last step over the package's schema rather than pushed
+ * upstream.
  */
 
 import { Schema } from 'prosemirror-model';
-import { nodes as basicNodes, marks } from 'prosemirror-schema-basic';
-import { orderedList, bulletList, listItem } from 'prosemirror-schema-list';
-import { tableNodes } from 'prosemirror-tables';
 import { defaultSettings, updateImageNode } from 'prosemirror-image-plugin';
-import { qtiChoiceInteractionNodeSpec } from '@citolab/prose-qti/components/choice';
-import { qtiExtendedTextInteractionNodeSpec } from '@citolab/prose-qti/components/extended-text';
-import { qtiTextEntryInteractionNodeSpec } from '@citolab/prose-qti/components/text-entry';
-import { qtiAssociateInteractionNodeSpec } from '@citolab/prose-qti/components/associate';
-import { qtiGapMatchInteractionNodeSpec } from '@citolab/prose-qti/components/gap-match';
-import { qtiHottextInteractionNodeSpec, qtiHottextNodeSpec } from '@citolab/prose-qti/components/hottext';
-import {
-  qtiInlineChoiceInteractionNodeSpec,
-  qtiInlineChoiceNodeSpec
-} from '@citolab/prose-qti/components/inline-choice';
-import { qtiMatchInteractionNodeSpec, qtiMatchInteractionTabularNodeSpec } from '@citolab/prose-qti/components/match';
-import { qtiOrderInteractionNodeSpec } from '@citolab/prose-qti/components/order';
-import { qtiSelectPointInteractionNodeSpec, imgSelectPointNodeSpec } from '@citolab/prose-qti/components/select-point';
-import { qtiRubricBlockNodeSpec } from '@citolab/prose-qti/components/rubric-block';
-import {
-  qtiPromptNodeSpec,
-  qtiPromptParagraphNodeSpec,
-  qtiSimpleChoiceNodeSpec,
-  qtiSimpleChoiceParagraphNodeSpec,
-  qtiSimpleAssociableChoiceNodeSpec,
-  qtiSimpleAssociableChoiceParagraphNodeSpec,
-  qtiSimpleMatchSetNodeSpec,
-  qtiGapNodeSpec,
-  qtiGapTextNodeSpec
-} from '@citolab/prose-qti/components/shared';
-
-import { qtiLayoutDivNodeSpec } from './components/qti-layout-div.js';
+import { createQtiSchema } from '@citolab/prose-qti/schema';
 
 export const imagePluginSettings = {
   ...defaultSettings,
   isBlock: false,
   hasTitle: false,
   enableResize: false,
-  defaultAlt: 'Image'
+  defaultAlt: 'Image',
 };
 
-const baseSchema = new Schema({
-  marks,
-  nodes: {
-    // ── Core prose ────────────────────────────────────────────────────────
-    doc:       { content: 'block+', attrs: { identifier: {}, title: {} } },
-    paragraph: { ...basicNodes.paragraph, content: 'inline*', group: 'block richtext' },
-    text:      basicNodes.text,
-    image:     basicNodes.image,
+const qtiSchema = createQtiSchema();
 
-    // ── Lists & tables ────────────────────────────────────────────────────
-    ordered_list: { ...orderedList, content: 'list_item+', group: 'block richtext' },
-    bullet_list:  { ...bulletList,  content: 'list_item+', group: 'block richtext' },
-    list_item:    { ...listItem,    content: 'paragraph (paragraph | bullet_list | ordered_list)*' },
-    ...tableNodes({ tableGroup: 'block richtext', cellContent: 'richtext+', cellAttributes: {} }),
-
-    // ── Generic QTI container (non-interaction) ───────────────────────────
-    qtiLayoutDiv:   { ...qtiLayoutDivNodeSpec,   content: 'block+', group: 'block' },
-    qtiRubricBlock: { ...qtiRubricBlockNodeSpec },
-
-    // ── QTI shared building blocks ────────────────────────────────────────
-    qtiPrompt:                          qtiPromptNodeSpec,                         
-    qtiPromptParagraph:                 qtiPromptParagraphNodeSpec,                
-    qtiSimpleChoice:                    qtiSimpleChoiceNodeSpec,                   
-    qtiSimpleChoiceParagraph:           qtiSimpleChoiceParagraphNodeSpec,          
-    qtiSimpleAssociableChoice:          qtiSimpleAssociableChoiceNodeSpec,         
-    qtiSimpleAssociableChoiceParagraph: qtiSimpleAssociableChoiceParagraphNodeSpec,
-    qtiSimpleMatchSet:                  qtiSimpleMatchSetNodeSpec,                 
-    qtiGap:                             qtiGapNodeSpec,                            
-    qtiGapText:                         qtiGapTextNodeSpec,                        
-
-    // ── QTI block interactions ────────────────────────────────────────────
-    qtiChoiceInteraction:       qtiChoiceInteractionNodeSpec,       
-    qtiOrderInteraction:        qtiOrderInteractionNodeSpec,        
-    qtiMatchInteraction:        qtiMatchInteractionNodeSpec,        
-    qtiMatchInteractionTabular: qtiMatchInteractionTabularNodeSpec, 
-    qtiAssociateInteraction:    qtiAssociateInteractionNodeSpec,    
-    qtiHottextInteraction:      qtiHottextInteractionNodeSpec,      
-    qtiGapMatchInteraction:     qtiGapMatchInteractionNodeSpec,     
-    qtiExtendedTextInteraction: qtiExtendedTextInteractionNodeSpec, 
-    qtiSelectPointInteraction:  qtiSelectPointInteractionNodeSpec,  
-
-    // ── QTI inline interactions ───────────────────────────────────────────
-    qtiInlineChoiceInteraction: qtiInlineChoiceInteractionNodeSpec ,
-    qtiTextEntryInteraction:    qtiTextEntryInteractionNodeSpec ,
-
-    // ── Interaction-specific child nodes ──────────────────────────────────
-    qtiHottext:      qtiHottextNodeSpec,       
-    qtiInlineChoice: qtiInlineChoiceNodeSpec,  
-    imgSelectPoint:  imgSelectPointNodeSpec,   
-  }
-});
-
-// Preserve the hand-aligned columns below — they make the topology readable
-// at a glance. Without this directive, Prettier collapses the per-node
-// alignment of `content` / `group` into a single column and the schema turns
-// back into the dense, unreadable form it used to be.
-// prettier-ignore
 export const appSchema = new Schema({
-  marks,
-  nodes: updateImageNode(baseSchema.spec.nodes, imagePluginSettings)
+  marks: qtiSchema.spec.marks,
+  nodes: updateImageNode(qtiSchema.spec.nodes, imagePluginSettings),
 });

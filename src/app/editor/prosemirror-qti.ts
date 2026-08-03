@@ -1,46 +1,31 @@
 /**
- * QTI integration layer — descriptors, plugins, attribute allowlist, and the
- * QTI 3.0 item roundtrip. The schema topology (which nodes exist, what groups
- * they join, what content they accept) is composed in `./schema.ts`, which
- * imports `descriptors` from this module.
+ * QTI integration layer — plugins, attribute allowlist, and the QTI 3.0 item roundtrip.
+ *
+ * The schema topology is not here and is not in `./schema.ts` either: it comes from
+ * `createQtiSchema()` in the package. This module and that one both read the same descriptor
+ * registry, which is what keeps the Insert menu and the schema in step — an interaction cannot
+ * appear in one and be missing from the other.
  *
  * What this module contributes:
- * - `descriptors`: the interaction descriptor registry. Consumed by `schema.ts`
- *   for NodeSpecs, by `main.ts` for the Insert menu, and below for plugins and
- *   the attribute allowlist.
- * - `qtiPlugins`: the interaction descriptors' own ProseMirror plugins plus the
- *   choice-aware Enter/Backspace keymap. These return false when no interaction
- *   applies, so compose them before the list-split and `baseKeymap` keymaps.
+ * - `descriptors`: the package's registry, re-exported for the Insert menu and the two derivations
+ *   below.
+ * - `qtiPlugins`: the interaction descriptors' own ProseMirror plugins plus the choice-aware
+ *   Enter/Backspace keymap. These return false when no interaction applies, so compose them before
+ *   the list-split and `baseKeymap` keymaps.
  * - `editableAttrs`: the per-node attribute allowlist for the attributes panel.
- * - `loadQtiItems` / `importQtiItem` / `exportQtiItem`: the QTI 3.0 roundtrip
- *   (the import/export helpers take the composed schema as an argument).
+ * - `loadQtiItems` / `importQtiItem` / `exportQtiItem`: the QTI 3.0 roundtrip (the import/export
+ *   helpers take the composed schema as an argument).
  *
- * It also carries the side-effect imports that register the QTI interaction edit
- * elements (custom elements used by the node views).
- *
- * Supported interactions: choice, extended-text, text-entry, associate,
- * gap-match, hottext, inline-choice, match, order, select-point (+ rubric block).
+ * It also carries the side-effect imports that register the QTI interaction edit elements (custom
+ * elements used by the node views). Those are still listed one by one on purpose: importing a
+ * descriptor is a data dependency, but registering a custom element is a side effect on the page,
+ * and this app should say out loud which ones it wants defined.
  */
 
 import { chainCommands } from 'prosemirror-commands';
 import { keymap } from 'prosemirror-keymap';
-import { choiceInteractionDescriptor } from '@citolab/prose-qti/components/choice';
-import { extendedTextInteractionDescriptor } from '@citolab/prose-qti/components/extended-text';
-import { textEntryInteractionDescriptor } from '@citolab/prose-qti/components/text-entry';
-import { associateInteractionDescriptor } from '@citolab/prose-qti/components/associate';
-import { gapMatchInteractionDescriptor } from '@citolab/prose-qti/components/gap-match';
-import { hottextInteractionDescriptor } from '@citolab/prose-qti/components/hottext';
-import { inlineChoiceInteractionDescriptor } from '@citolab/prose-qti/components/inline-choice';
-import { matchInteractionDescriptor } from '@citolab/prose-qti/components/match';
-import { orderInteractionDescriptor } from '@citolab/prose-qti/components/order';
-import { selectPointInteractionDescriptor } from '@citolab/prose-qti/components/select-point';
-import { qtiRubricBlockDescriptor } from '@citolab/prose-qti/components/rubric-block';
-import {
-  defaultRoundtripTransforms,
-  ensureInteractionPrompts,
-  exportItemXml,
-  importItemFromUrl
-} from '@citolab/prose-qti/item-roundtrip';
+import { listInteractionDescriptors } from '@citolab/prose-qti/core/interactions/composer';
+import { exportItemXml, importItemFromUrl } from '@citolab/prose-qti/item-roundtrip';
 
 import { qtiTransformTest } from '@qti-components/transformers';
 
@@ -66,20 +51,15 @@ import type { InteractionDescriptor } from '@citolab/prose-qti/interfaces';
 import type { Node as ProseMirrorNode, Schema } from 'prosemirror-model';
 import type { Plugin } from 'prosemirror-state';
 
-/** Every descriptor this minimal editor understands. */
-export const descriptors: InteractionDescriptor[] = [
-  choiceInteractionDescriptor,
-  extendedTextInteractionDescriptor,
-  textEntryInteractionDescriptor,
-  associateInteractionDescriptor,
-  gapMatchInteractionDescriptor,
-  hottextInteractionDescriptor,
-  inlineChoiceInteractionDescriptor,
-  matchInteractionDescriptor,
-  orderInteractionDescriptor,
-  selectPointInteractionDescriptor,
-  qtiRubricBlockDescriptor
-];
+/**
+ * Every descriptor the package registers — the same list `createQtiSchema()` builds the schema
+ * from, so the editor cannot offer an interaction the schema has no node for, or carry a node no
+ * menu can insert.
+ *
+ * This was a hand-maintained array naming eleven descriptors. It had drifted: the package registers
+ * twelve, and the one missing here was `matchInteractionTabular`.
+ */
+export const descriptors: readonly InteractionDescriptor[] = listInteractionDescriptors();
 
 /** Editable-attribute allowlist for the panel, keyed by node type. Every
  *  attribute outside the listed names is shown disabled by the panel. */
@@ -123,19 +103,19 @@ export async function loadQtiItems(): Promise<{ href: string; identifier: string
 /**
  * Import a QTI 3.0 item from `href` into a ProseMirror document for `schema`.
  *
- * The editor's schema requires `<qti-prompt>` on interactions that QTI 3.0
- * marks optional. ProseMirror's `DOMParser` only inserts *wrapping* parents to
- * recover misplaced children; it does not auto-insert required leading
- * siblings, so a prompt-less interaction in the source would close on its
- * first child and leak the rest of the interaction up to the doc level. The
- * `ensureInteractionPrompts` transform — driven by the schema, no hardcoded
- * tag list — injects an empty prompt where one is missing so the parser sees
- * the required first child in place.
+ * This used to pass an `ensureInteractionPrompts` transform, because the editor's schema required
+ * `<qti-prompt>` on interactions that QTI 3.0 marks optional — and ProseMirror's `DOMParser` only
+ * inserts *wrapping* parents to recover misplaced children, never a required leading sibling, so a
+ * prompt-less interaction in the source closed on its first child and leaked the rest up to the doc
+ * level.
+ *
+ * The requirement was the bug. Synthesising a prompt made a valid QTI item import as a document
+ * containing an element its author never wrote, which then exported back out as real markup: the
+ * roundtrip added content. Every interaction's content expression now leads with `qtiPrompt?`, so a
+ * prompt-less interaction parses as what it is and no transform is needed.
  */
 export function importQtiItem(href: string, schema: Schema): Promise<ProseMirrorNode> {
-  return importItemFromUrl(href, schema, {
-    transforms: [...defaultRoundtripTransforms, ensureInteractionPrompts(schema)]
-  });
+  return importItemFromUrl(href, schema);
 }
 
 /** Serialize a ProseMirror document back to a QTI 3.0 item XML string. */
