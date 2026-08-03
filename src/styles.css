@@ -31,6 +31,7 @@
 @import 'prosemirror-tables/style/tables.css';
 @import 'prosemirror-image-plugin/dist/styles/common.css';
 @import 'prosemirror-image-plugin/dist/styles/withoutResize.css';
+@import './app/editor/decorations/choice/choice-decorations.css';
 @import './app/editor/components/text-entry-widget.css';
 
 html,

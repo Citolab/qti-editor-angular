@@ -1,0 +1,175 @@
+/*
+ * Choice interaction — editor decorations.
+ *
+ * Styles the widget decorations emitted by qti-choice-interaction.decorator.ts: the per-choice ×,
+ * the trailing +, and the settings pill.
+ *
+ * The × and the pill are rendered as *siblings* of what they decorate (the decorator emits them
+ * after the choice / after the interaction) and are placed with CSS anchor positioning. Two reasons
+ * that beats the usual `position: relative` parent + absolute child: the anchor keeps working even
+ * if the theme stops positioning the host, and — decisively — an element can never anchor to its
+ * own ancestor, so a widget nested inside the choice could not be anchored to it at all.
+ *
+ * ## The hover tint re-points core-css's own variable, scoped to this element
+ *
+ * The branch this came from declared `--qti-edit-interaction-hover-bg` at `:root`. That name now
+ * belongs to core-css.css, which consumes it in `.ProseMirror [response-identifier]:hover` — a rule
+ * matching EVERY interaction — so declaring it at `:root` would have tinted match, order and
+ * gap-match blue too.
+ *
+ * Declaring it on `qti-choice-interaction` instead gets the intended result with no parallel
+ * variable and no extra rule. Custom properties inherit, and `var()` resolves against the element
+ * the rule matched: core-css's selector matches the choice interaction, so it reads the value
+ * declared here, while every other interaction resolves the `:root` default. Verified in the
+ * browser — the choice element computes the blue, `:root` still computes core-css's neutral wash.
+ *
+ * That is also why no `@layer` is involved. Layers order RULES, and rule precedence was never the
+ * problem: one variable at `:root` fed a rule matching everything, and re-ordering layers would
+ * still have turned every interaction blue. The rules below stay unlayered, matching the convention
+ * kennisnet-edit.css already documents — app CSS wins.
+ *
+ * Palette is aliased from @qti-components/theme; never replicate values.
+ */
+
+:root {
+  /* Decoration affordances (×, +, settings pill) */
+  --qti-edit-decoration-fg: var(--qti-border-color, #9b77a9);
+  --qti-edit-decoration-accent: var(--qti-primary, #581d70);
+  --qti-edit-decoration-danger: var(--qti-error, #df0000);
+  --qti-edit-decoration-hover-bg: var(--qti-hover-bg, #f9fafb);
+  --qti-edit-decoration-settings-bg: var(--qti-info, #007ac3);
+  --qti-edit-decoration-settings-fg: var(--qti-primary-fg, #fff);
+}
+
+/* ─── Block states — hover tint, active ring ───────────────────────────────
+   The tint is core-css's own, re-pointed here at the same blue as the settings pill so a themed
+   --qti-info re-colours the whole affordance set at once. core-css paints it as a spread
+   box-shadow rather than padding, so nothing in the document reflows on hover.
+
+   "Clicked into" has no native selector — ProseMirror keeps DOM focus on the editable root, so
+   `:focus-within` never matches the interaction. But the decorator already emits the settings pill
+   as the interaction's next sibling exactly while the selection is inside it, so `:has(+ …)` reads
+   that state straight off the DOM. If the pill's visibility rule ever changes, this ring follows
+   it — they are deliberately the same condition. */
+qti-choice-interaction {
+  /* Scoped override of core-css's contract — see the note at the top. */
+  --qti-edit-interaction-hover-bg: color-mix(in srgb, var(--qti-info, #007ac3) 10%, white);
+  --qti-edit-interaction-hover-radius: 0.5rem;
+  --qti-edit-interaction-hover-inset: 0.5rem;
+
+  border-radius: var(--qti-edit-interaction-hover-radius);
+  transition:
+    background-color var(--qti-motion-duration-fast, 150ms) ease,
+    box-shadow var(--qti-motion-duration-fast, 150ms) ease;
+}
+
+/* Suppress the tint while the interaction is active — the ring already says it, and both at once
+   reads as noise. core-css owns the tint now, so this cancels it rather than out-painting it. */
+qti-choice-interaction:has(+ .qti-choice-decoration--settings):hover {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Choices carry the theme's white surface, which would punch white cards out of the tint. Drop it
+   for the duration of the hover so the block reads as one surface. Skipped for
+   `qti-input-control-hidden`, where the choice background *is* the checked-state visual. */
+qti-choice-interaction:not(.qti-input-control-hidden):hover qti-simple-choice {
+  background: transparent;
+}
+
+/* The ring reuses the pill's own colour and the tint's own inset rather than declaring variables of
+   its own: the ring, the pill and the hover tint are one affordance seen in three states, so a
+   themed --qti-info should move all three together. */
+qti-choice-interaction:has(+ .qti-choice-decoration--settings) {
+  outline: 3px solid var(--qti-edit-decoration-settings-bg);
+  outline-offset: var(--qti-edit-interaction-hover-inset);
+}
+
+/* The theme sizes choices `fit-content` (runtime chips hug their text). In the editor the row is an
+   authoring surface: it must span the block so the × can pin to the right edge, the way the design
+   shows it. The padding keeps long answer text from running underneath the ×. */
+qti-choice-interaction qti-simple-choice {
+  width: auto;
+  padding-right: 2rem;
+}
+
+.qti-choice-decoration {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--qti-edit-decoration-fg);
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--qti-motion-duration-fast, 150ms) ease;
+}
+
+/* × — pinned to the right edge of its choice row, revealed on hover. `anchor()` resolves against
+   the `position-anchor` the decorator sets inline per widget; anchor names must be unique per row,
+   so they are minted from the node's position. */
+.qti-choice-decoration--remove {
+  position: absolute;
+  right: anchor(right);
+  top: anchor(center);
+  translate: 0 -50%;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: var(--qti-field-border-radius, 0.25rem);
+  opacity: 0;
+}
+
+/* Hovering the row reveals it; hovering the × itself keeps it up (the button sits outside the
+   choice, so the row's :hover drops as the pointer arrives). */
+qti-simple-choice:hover + .qti-choice-decoration--remove,
+.qti-choice-decoration--remove:hover,
+.qti-choice-decoration--remove:focus-visible {
+  opacity: 1;
+}
+
+.qti-choice-decoration--remove:hover {
+  background: var(--qti-edit-decoration-hover-bg);
+  color: var(--qti-edit-decoration-danger);
+}
+
+/* + — the one decoration that stays inside the interaction, in flow, below the last choice. No
+   anchoring: normal layout already puts it where it belongs. */
+.qti-choice-decoration--add {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: var(--qti-padding-vertical, 0.5rem);
+  border-radius: 50%;
+  color: var(--qti-edit-decoration-accent);
+}
+
+.qti-choice-decoration--add:hover {
+  background: var(--qti-edit-decoration-hover-bg);
+}
+
+/* Settings pill — floats above the interaction, rendered only while the selection sits inside it.
+   `position-try-fallbacks` drops it below the block when there is not room above (first block in
+   the document, under the sticky toolbar), instead of letting it disappear behind the chrome. */
+.qti-choice-decoration--settings {
+  position: absolute;
+  right: anchor(right);
+  bottom: anchor(top);
+  margin-bottom: var(--qti-padding-vertical, 0.5rem);
+  position-try-fallbacks: --qti-settings-below;
+  z-index: var(--qti-overlay-z-index, 1);
+  gap: var(--qti-padding-vertical, 0.5rem);
+  padding: 0.375rem var(--qti-padding-horizontal, 1rem);
+  border-radius: 1.5rem;
+  background: var(--qti-edit-decoration-settings-bg);
+  color: var(--qti-edit-decoration-settings-fg);
+  font-weight: 600;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--qti-edit-decoration-settings-bg) 35%, transparent);
+}
+
+@position-try --qti-settings-below {
+  bottom: auto;
+  top: anchor(bottom);
+  margin-bottom: 0;
+  margin-top: var(--qti-padding-vertical, 0.5rem);
+}

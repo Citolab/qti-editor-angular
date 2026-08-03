@@ -27,6 +27,8 @@ import { keymap } from 'prosemirror-keymap';
 import { listInteractionDescriptors } from '@citolab/prose-qti/core/interactions/composer';
 import { exportItemXml, importItemFromUrl } from '@citolab/prose-qti/item-roundtrip';
 
+import { createChoiceInteractionDecoratorPlugin } from './decorations/choice/qti-choice-interaction.decorator';
+
 import { qtiTransformTest } from '@qti-components/transformers';
 
 // Register the interaction edit elements (custom elements used by the views).
@@ -89,7 +91,13 @@ const backspaceCommand = chainCommands(...descriptors.flatMap(descriptor => desc
  */
 export const qtiPlugins: Plugin[] = [
   keymap({ Enter: enterCommand, Backspace: backspaceCommand }),
-  ...descriptors.flatMap(descriptor => descriptor.pluginFactories?.map(factory => factory()) ?? [])
+  ...descriptors.flatMap(descriptor => descriptor.pluginFactories?.map(factory => factory()) ?? []),
+  /*
+   * Registered here rather than on the choice descriptor, so it stays exclusive to this app while
+   * the design is being validated — a descriptor plugin would reach every host that composes the
+   * schema, including the ProseKit apps upstream.
+   */
+  createChoiceInteractionDecoratorPlugin()
 ];
 
 const TEST_BASE = 'qti/kennisnet';

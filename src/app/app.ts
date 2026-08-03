@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 
-import { EditorState } from 'prosemirror-state';
+import { EditorState, NodeSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { keymap } from 'prosemirror-keymap';
 import { baseKeymap, toggleMark, chainCommands } from 'prosemirror-commands';
@@ -44,7 +44,7 @@ import { imagePlugin, startImageUpload } from 'prosemirror-image-plugin';
 import { blockSelectPlugin, nodeAttrsSyncPlugin } from '@citolab/prose-extensions/prosemirror';
 import { qtiLayoutDivLockPlugin } from '@citolab/prose-qti/schema';
 
-import { attributesPanelPlugin } from './editor/components/attributes-panel-plugin';
+import { attributesPanelPlugin, attributesPanelScopeKey } from './editor/components/attributes-panel-plugin';
 import {
   descriptors,
   editableAttrs,
@@ -54,6 +54,10 @@ import {
   exportQtiItem,
 } from './editor/prosemirror-qti';
 import { appSchema as schema, imagePluginSettings } from './editor/schema';
+import {
+  QTI_OPEN_NODE_SETTINGS_EVENT,
+  type QtiOpenNodeSettingsDetail,
+} from './editor/decorations/choice/qti-choice-interaction.decorator';
 import { textEntryWidgetPlugin } from './editor/components/text-entry-widget';
 
 import type { MarkType, Node as ProseMirrorNode } from 'prosemirror-model';
@@ -293,6 +297,38 @@ export class App implements OnDestroy {
         view.updateState(view.state.apply(tr));
       },
     });
+
+    /*
+     * The choice decorations' settings pill only dispatches an event — it deliberately does not
+     * know what a host's properties UI is. This app has one, so the pill scopes it: the panel drops
+     * to the interaction and whatever is selected inside it, instead of listing the chain from the
+     * document down.
+     *
+     * That is the difference between the pill and simply clicking into the interaction, which
+     * already showed the interaction as one section among five. A control labelled "settings" is
+     * promising that interaction's settings; scoping is what makes the label true.
+     *
+     * Selecting the node as well is what keeps it visibly active — the decorator emits the pill
+     * only while the selection is inside the interaction, and the ring follows the pill. It also
+     * gives the scope its exit: the panel's plugin state drops the scope as soon as the selection
+     * leaves, so clicking anywhere else restores the full chain with nothing to wire.
+     *
+     * Listened for on the container rather than `view.dom` because the pill is a widget decoration
+     * that can sit outside the editable root's subtree; the event bubbles and is `composed`, so the
+     * container catches it either way.
+     */
+    container.addEventListener(QTI_OPEN_NODE_SETTINGS_EVENT, event => {
+      const { pos } = (event as CustomEvent<QtiOpenNodeSettingsDetail>).detail;
+      if (!view.state.doc.nodeAt(pos)) return;
+
+      view.dispatch(
+        view.state.tr
+          .setSelection(NodeSelection.create(view.state.doc, pos))
+          .setMeta(attributesPanelScopeKey, pos),
+      );
+      view.focus();
+    });
+
     return view;
   }
 }
