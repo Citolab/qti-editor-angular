@@ -22,8 +22,7 @@
  * kennisnet.css is kept byte-identical with the copies in qti-editor and qti-components, so that
  * all three render an item the same way. Diff before editing it.
  */
-@import '@qti-components/theme/item.css';
-@import '@citolab/prose-qti/core-css.css';
+@import '@citolab/prose-qti/qti-prose.css';
 @import './app/editor/kennisnet.css';
 @import 'prosemirror-view/style/prosemirror.css';
 @import 'prosemirror-gapcursor/style/gapcursor.css';

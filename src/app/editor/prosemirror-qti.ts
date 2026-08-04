@@ -29,7 +29,7 @@ import { exportItemXml, importItemFromUrl } from '@citolab/prose-qti/item-roundt
 
 import { createChoiceInteractionDecoratorPlugin } from './decorations/choice/qti-choice-interaction.decorator';
 
-import { qtiTransformTest } from '@qti-components/transformers';
+import { qtiTransformTest } from '@citolab/prose-qti/transformers';
 
 // Register the interaction edit elements (custom elements used by the views).
 import '@citolab/prose-qti/components/choice/register.js';

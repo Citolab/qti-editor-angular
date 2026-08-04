@@ -24,14 +24,8 @@ importers:
         specifier: 1.5.0
         version: 1.5.0(prosekit@0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
       '@citolab/prose-qti':
-        specifier: 1.11.1
-        version: 1.11.1(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
-      '@qti-components/theme':
-        specifier: https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@509fcae
-        version: https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@509fcae
-      '@qti-components/transformers':
-        specifier: https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@509fcae
-        version: https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@509fcae
+        specifier: 1.12.0
+        version: 1.12.0(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
       lit:
         specifier: ^3.3.2
         version: 3.3.3
@@ -409,8 +403,8 @@ packages:
       prosekit:
         optional: true
 
-  '@citolab/prose-qti@1.11.1':
-    resolution: {integrity: sha512-7rPSpW3API+8h8yIVUIWu092aF6ESVbYi9tdrhvzv1t/iesaELD7A2rLcXqVEmDq9H5rxTxsfK6I8u1wlS3OMA==}
+  '@citolab/prose-qti@1.12.0':
+    resolution: {integrity: sha512-LIcpMklec9rfrGGC+1MlM4l5p2NO3Yno1k/gDuFxHu6bGsgSeQ9XJh2ZHTOjwpaOrc2grWpD/FOJIgrOi1xshQ==}
     peerDependencies:
       lit: ^3.3.2
       prosekit: ^0.21.3
@@ -1365,16 +1359,12 @@ packages:
       '@lit/context': ^1.1.6
       lit: ^3.3.1
 
-  '@qti-components/theme@https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@509fcae':
-    resolution: {tarball: https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@509fcae}
+  '@qti-components/theme@https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@29a326f':
+    resolution: {tarball: https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@29a326f}
     version: 1.5.0
 
   '@qti-components/transformers@https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@29a326f':
     resolution: {tarball: https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@29a326f}
-    version: 1.7.1
-
-  '@qti-components/transformers@https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@509fcae':
-    resolution: {tarball: https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@509fcae}
     version: 1.7.1
 
   '@qti-components/utilities@https://pkg.pr.new/Citolab/qti-components/@qti-components/utilities@29a326f02499c19ca67b45d81fc5cc8f589a15c1':
@@ -3880,7 +3870,7 @@ snapshots:
     optionalDependencies:
       prosekit: 0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1)
 
-  '@citolab/prose-qti@1.11.1(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)':
+  '@citolab/prose-qti@1.12.0(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)':
     dependencies:
       '@citolab/prose-extensions': 1.5.0(prosekit@0.21.4(@shikijs/types@4.3.1)(@types/hast@3.0.4)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
       '@lit/context': 1.1.6
@@ -3895,6 +3885,7 @@ snapshots:
       '@qti-components/order-interaction': https://pkg.pr.new/Citolab/qti-components/@qti-components/order-interaction@29a326f(@lit/context@1.1.6)(lit@3.3.3)
       '@qti-components/select-point-interaction': https://pkg.pr.new/Citolab/qti-components/@qti-components/select-point-interaction@29a326f(@lit/context@1.1.6)(lit@3.3.3)
       '@qti-components/text-entry-interaction': https://pkg.pr.new/Citolab/qti-components/@qti-components/text-entry-interaction@29a326f(@lit/context@1.1.6)(lit@3.3.3)
+      '@qti-components/theme': https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@29a326f
       '@qti-components/transformers': https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@29a326f
       linkedom: 0.18.13
       lit: 3.3.3
@@ -4867,11 +4858,9 @@ snapshots:
       '@qti-components/utilities': https://pkg.pr.new/Citolab/qti-components/@qti-components/utilities@29a326f02499c19ca67b45d81fc5cc8f589a15c1(lit@3.3.3)
       lit: 3.3.3
 
-  '@qti-components/theme@https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@509fcae': {}
+  '@qti-components/theme@https://pkg.pr.new/Citolab/qti-components/@qti-components/theme@29a326f': {}
 
   '@qti-components/transformers@https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@29a326f': {}
-
-  '@qti-components/transformers@https://pkg.pr.new/Citolab/qti-components/@qti-components/transformers@509fcae': {}
 
   '@qti-components/utilities@https://pkg.pr.new/Citolab/qti-components/@qti-components/utilities@29a326f02499c19ca67b45d81fc5cc8f589a15c1(lit@3.3.3)':
     dependencies:
