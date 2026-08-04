@@ -35,7 +35,6 @@ import { qtiTransformTest } from '@qti-components/transformers';
 import '@citolab/prose-qti/components/choice/register.js';
 import '@citolab/prose-qti/components/extended-text/register.js';
 import '@citolab/prose-qti/components/text-entry/register.js';
-import '@citolab/prose-qti/components/associate/register.js';
 import '@citolab/prose-qti/components/gap-match/register.js';
 import '@citolab/prose-qti/components/hottext/register.js';
 import '@citolab/prose-qti/components/inline-choice/register.js';
