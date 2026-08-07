@@ -30,25 +30,19 @@
     </qti-outcome-declaration>
 
     <qti-item-body>
-        <div class="qti-layout-row">
-            <div class="qti-layout-col10">
-                <p>Geef voor elk van de onderstaande stellingen aan of ze juist of onjuist zijn.</p>
-                <qti-match-interaction response-identifier="RESPONSE" class="qti-match-tabular">
-                    <qti-simple-match-set>
-                        <qti-simple-associable-choice identifier="evenaar" match-max="1">De evenaar loopt door drie continenten</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="helium" match-max="1">Helium is lichter dan lucht</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="pluto" match-max="1">Pluto wordt officieel beschouwd als een planeet</qti-simple-associable-choice>
-                    </qti-simple-match-set>
-                    <qti-simple-match-set>
-                        <qti-simple-associable-choice identifier="juist" match-max="3">Juist</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="onjuist" match-max="3">Onjuist</qti-simple-associable-choice>
-                    </qti-simple-match-set>
-                </qti-match-interaction>
-            </div>
-            <div class="qti-layout-col2">
-                <img src="resources/question-marks.png" alt="Vragen" width="130" />
-            </div>
-        </div>
+        <p>Geef voor elk van de onderstaande stellingen aan of ze juist of onjuist zijn.</p>
+        <qti-match-interaction response-identifier="RESPONSE" class="qti-match-tabular">
+            <qti-simple-match-set>
+                <qti-simple-associable-choice identifier="evenaar" match-max="1">De evenaar loopt door drie continenten</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="helium" match-max="1">Helium is lichter dan lucht</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="pluto" match-max="1">Pluto wordt officieel beschouwd als een planeet</qti-simple-associable-choice>
+            </qti-simple-match-set>
+            <qti-simple-match-set>
+                <qti-simple-associable-choice identifier="juist" match-max="3">Juist</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="onjuist" match-max="3">Onjuist</qti-simple-associable-choice>
+            </qti-simple-match-set>
+        </qti-match-interaction>
+        <p><img src="resources/question-marks.png" alt="Vragen" width="130" /></p>
 
         <qti-rubric-block view="scorer" use="scoring">
             <qti-content-body>

@@ -45,7 +45,7 @@
                 </qti-simple-match-set>
             </qti-match-interaction>
 
-            <img src="resources/icons-physics.png" alt="Eenheden" />
+            <p><img src="resources/icons-physics.png" alt="Eenheden" /></p>
         </div>
 
         <qti-rubric-block view="scorer" use="scoring">

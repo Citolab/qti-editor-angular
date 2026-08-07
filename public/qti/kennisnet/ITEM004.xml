@@ -26,17 +26,11 @@
     </qti-outcome-declaration>
 
     <qti-item-body>
-        <div class="qti-layout-row">
-            <div class="qti-layout-col6">
-                <p>
-                    Wat is het decimale getal dat overeenkomt met het Romeinse cijfer <strong>XLIV</strong>?
-                </p>
-                <qti-text-entry-interaction response-identifier="RESPONSE" expected-length="3"/>
-            </div>
-            <div class="qti-layout-col6">
-                <img src="resources/ancient-rome.jpeg" alt="Rome"/>
-            </div>
-        </div>
+        <p>
+            Wat is het decimale getal dat overeenkomt met het Romeinse cijfer <strong>XLIV</strong>?
+        </p>
+        <p><qti-text-entry-interaction response-identifier="RESPONSE" expected-length="3"/></p>
+        <p><img src="resources/ancient-rome.jpeg" alt="Rome"/></p>
 
         <qti-rubric-block view="scorer" use="scoring">
             <qti-content-body>

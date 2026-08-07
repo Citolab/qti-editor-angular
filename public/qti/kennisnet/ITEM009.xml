@@ -50,7 +50,7 @@
                 </qti-simple-match-set>
             </qti-match-interaction>
 
-            <img src="resources/physics-chemistry.png" alt="Natuur- en scheikunde" />
+            <p><img src="resources/physics-chemistry.png" alt="Natuur- en scheikunde" /></p>
         </div>
 
         <qti-rubric-block view="scorer" use="scoring">

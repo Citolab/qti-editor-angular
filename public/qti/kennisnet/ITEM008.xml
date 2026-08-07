@@ -30,26 +30,20 @@
     </qti-outcome-declaration>
 
     <qti-item-body>
-        <div class="qti-layout-row">
-            <div class="qti-layout-col8">
-                <p>Koppel de historicus/auteur aan het bijbehorende werk:</p>
-                <qti-match-interaction response-identifier="RESPONSE" class="qti-choices-right">
-                    <qti-simple-match-set>
-                        <qti-simple-associable-choice identifier="left_diamond" match-max="1">Jared Diamond</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="left_harari" match-max="1">Yuval Noah Harari</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="left_arendt" match-max="1">Hannah Arendt</qti-simple-associable-choice>
-                    </qti-simple-match-set>
-                    <qti-simple-match-set>
-                        <qti-simple-associable-choice identifier="right_sapiens" match-max="1">Sapiens</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="right_ggs" match-max="1">Guns, Germs and Steel</qti-simple-associable-choice>
-                        <qti-simple-associable-choice identifier="right_thc" match-max="1">The Human Condition</qti-simple-associable-choice>
-                    </qti-simple-match-set>
-                </qti-match-interaction>
-            </div>
-            <div class="qti-layout-col4 qti-margin-t-5">
-                <img src="resources/books.png" alt="Boeken" class="qti-valign-middle" width="250" />
-            </div>
-        </div>
+        <p>Koppel de historicus/auteur aan het bijbehorende werk:</p>
+        <qti-match-interaction response-identifier="RESPONSE" class="qti-choices-right">
+            <qti-simple-match-set>
+                <qti-simple-associable-choice identifier="left_diamond" match-max="1">Jared Diamond</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="left_harari" match-max="1">Yuval Noah Harari</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="left_arendt" match-max="1">Hannah Arendt</qti-simple-associable-choice>
+            </qti-simple-match-set>
+            <qti-simple-match-set>
+                <qti-simple-associable-choice identifier="right_sapiens" match-max="1">Sapiens</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="right_ggs" match-max="1">Guns, Germs and Steel</qti-simple-associable-choice>
+                <qti-simple-associable-choice identifier="right_thc" match-max="1">The Human Condition</qti-simple-associable-choice>
+            </qti-simple-match-set>
+        </qti-match-interaction>
+        <p><img src="resources/books.png" alt="Boeken" class="qti-valign-middle" width="250" /></p>
 
         <qti-rubric-block view="scorer" use="scoring">
             <qti-content-body>
