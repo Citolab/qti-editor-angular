@@ -21,11 +21,11 @@ importers:
         specifier: ^21.2.0
         version: 21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2))
       '@citolab/prose-extensions':
-        specifier: ^1.5.2
-        version: 1.5.2(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
+        specifier: ^1.5.3
+        version: 1.5.3(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
       '@citolab/prose-qti':
-        specifier: ^1.14.3
-        version: 1.14.3(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
+        specifier: ^1.14.4
+        version: 1.14.4(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
       lit:
         specifier: ^3.3.2
         version: 3.3.3
@@ -389,8 +389,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@citolab/prose-extensions@1.5.2':
-    resolution: {integrity: sha512-5ynCCTT1HAb1TUy3+62I5QZQ4Tat7twdMGZIiJSxpkS1Sco68LZwV5uyyptuFeyDmjMkqL9sk9FrzBGpNFzyzA==}
+  '@citolab/prose-extensions@1.5.3':
+    resolution: {integrity: sha512-cBQi8+fUnX51WH/jMp00lHnRUunm4PczJW3KoDmticd13QAN1bD3sKoRyaCOd2hgLtFb0WyOM3Z0BtqfSxiOgQ==}
     peerDependencies:
       prosekit: ^0.21.4
       prosemirror-inputrules: ^1.5.1
@@ -403,8 +403,8 @@ packages:
       prosekit:
         optional: true
 
-  '@citolab/prose-qti@1.14.3':
-    resolution: {integrity: sha512-V1XZQK2L+Jjf4rQO3agXMHzBUL+Y8Zv5QfS6uOIGxauZr/mrUbl2mX5wRVJZ0NL44tBNg0oOD0jfRy49q+7qJA==}
+  '@citolab/prose-qti@1.14.4':
+    resolution: {integrity: sha512-CTglI8MdaEjVlwo/1ILA9ZzXzynvRqx9HzyMhNZtuA+ZtbAXvlp3Lh2pj4BZulyvy9rJRhqq7KrmEO0lzgPWLw==}
     peerDependencies:
       lit: ^3.3.3
       prosekit: ^0.21.4
@@ -3814,7 +3814,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@citolab/prose-extensions@1.5.2(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)':
+  '@citolab/prose-extensions@1.5.3(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)':
     dependencies:
       lit: 3.3.3
       prosemirror-inputrules: 1.5.1
@@ -3826,9 +3826,9 @@ snapshots:
     optionalDependencies:
       prosekit: 0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1)
 
-  '@citolab/prose-qti@1.14.3(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)':
+  '@citolab/prose-qti@1.14.4(lit@3.3.3)(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-commands@1.7.1)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)':
     dependencies:
-      '@citolab/prose-extensions': 1.5.2(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
+      '@citolab/prose-extensions': 1.5.3(prosekit@0.21.4(@shikijs/types@4.4.2)(@types/hast@3.0.5)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-transform@1.12.0)(prosemirror-view@1.42.1))(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.11)(prosemirror-schema-basic@1.2.4)(prosemirror-schema-list@1.5.1)(prosemirror-state@1.4.4)(prosemirror-view@1.42.1)
       '@lit/context': 1.1.6
       '@qti-components/base': https://pkg.pr.new/Citolab/qti-components/@qti-components/base@9a2532b(@lit/context@1.1.6)(lit@3.3.3)
       '@qti-components/choice-interaction': https://pkg.pr.new/Citolab/qti-components/@qti-components/choice-interaction@9a2532b(@lit/context@1.1.6)(lit@3.3.3)
